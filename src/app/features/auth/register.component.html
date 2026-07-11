@@ -1,0 +1,58 @@
+<div class="login-wrap" [attr.data-theme]="'light'">
+  <div class="login-card">
+    <div class="brand">
+      <div class="logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18"/><path d="M12 3a8 8 0 0 1 8 8H4a8 8 0 0 1 8-8Z"/><path d="M6 19h12"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">Comanda</div>
+        <div class="brand-sub">Crea tu restaurante</div>
+      </div>
+    </div>
+
+    <h1 class="title">Crea tu cuenta</h1>
+    <p class="subtitle">Empieza gratis. En un minuto tendrás tu menú y tu tienda en línea.</p>
+
+    <form (ngSubmit)="submit()">
+      <label class="field">
+        <span>Nombre del restaurante</span>
+        <input type="text" name="restaurant" [ngModel]="restaurant()" (ngModelChange)="restaurant.set($event)"
+               placeholder="Ej. Pizzería La Loca" required />
+      </label>
+      <label class="field">
+        <span>Tu nombre</span>
+        <input type="text" name="name" [ngModel]="name()" (ngModelChange)="name.set($event)"
+               autocomplete="name" placeholder="Nombre del administrador" required />
+      </label>
+      <label class="field">
+        <span>País</span>
+        <select name="country" [ngModel]="country()" (ngModelChange)="country.set($event)" required>
+          <option value="" disabled>Selecciona tu país</option>
+          @for (c of countries; track c.code) {
+            <option [value]="c.code">{{ c.flag }} {{ c.name }}</option>
+          }
+        </select>
+      </label>
+      <label class="field">
+        <span>Correo</span>
+        <input type="email" name="email" [ngModel]="email()" (ngModelChange)="email.set($event)"
+               autocomplete="username" placeholder="tucorreo@restaurante.sv" required />
+      </label>
+      <label class="field">
+        <span>Contraseña</span>
+        <input type="password" name="password" [ngModel]="password()" (ngModelChange)="password.set($event)"
+               autocomplete="new-password" placeholder="Mínimo 8 caracteres" required />
+      </label>
+
+      @if (error()) {
+        <div class="error">{{ error() }}</div>
+      }
+
+      <button type="submit" class="submit" [disabled]="loading() || !canSubmit()">
+        {{ loading() ? 'Creando tu cuenta…' : 'Crear cuenta' }}
+      </button>
+    </form>
+
+    <div class="hint">¿Ya tienes cuenta? <a routerLink="/login"><strong>Inicia sesión</strong></a></div>
+  </div>
+</div>

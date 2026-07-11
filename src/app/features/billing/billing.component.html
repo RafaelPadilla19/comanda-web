@@ -1,0 +1,159 @@
+<div style="padding:26px;max-width:760px;margin:0 auto;">
+  <div style="font-size:20px;font-weight:800;letter-spacing:-.4px;">Suscripción</div>
+  <div style="font-size:13px;color:var(--text-3);margin-top:2px;">Tu plan en Comanda y tu historial de pagos.</div>
+
+  @if (loading()) {
+    <div style="padding:48px;text-align:center;color:var(--text-3);">Cargando…</div>
+  } @else if (billing(); as b) {
+    @if (renewalAlert() === 'pastdue') {
+      <div style="margin-top:16px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:14px;padding:14px 16px;font-size:13.5px;font-weight:600;">
+        ⛔ Tu suscripción venció. Renueva tu plan abajo para reactivar el acceso a Comanda.
+      </div>
+    } @else if (renewalAlert() === 'soon') {
+      <div style="margin-top:16px;background:#fffbeb;border:1px solid #fde68a;color:#b45309;border-radius:14px;padding:14px 16px;font-size:13.5px;font-weight:600;">
+        ⏰ Tu plan {{ daysLeft()! > 0 ? 'vence en ' + daysLeft() + ' día(s)' : 'vence hoy' }}. Renueva para no perder el acceso.
+      </div>
+    }
+
+    <!-- Tarjeta del plan -->
+    <div style="margin-top:20px;background:linear-gradient(140deg,var(--primary-soft),transparent);border:1px solid var(--border);border-radius:16px;padding:22px;box-shadow:var(--shadow-sm);">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:12.5px;color:var(--text-3);font-weight:600;">Plan actual</div>
+          <div style="font-size:24px;font-weight:800;letter-spacing:-.5px;margin-top:2px;">{{ b.planName }}</div>
+          <div style="font-size:14px;color:var(--text-2);margin-top:4px;">
+            {{ b.priceMonthly > 0 ? money(b.priceMonthly) + ' / mes' : 'Gratis' }}
+          </div>
+        </div>
+        <span style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;" [style.color]="statusColor()" [style.background]="statusColor() + '22'">● {{ statusLabel() }}</span>
+      </div>
+      <div style="font-size:12.5px;color:var(--text-3);margin-top:14px;">
+        Vigente hasta: <b style="color:var(--text);">{{ fmtDate(b.subscriptionEndsAt) }}</b>
+      </div>
+      @if (b.hasPlan && b.priceMonthly > 0) {
+        <button (click)="pay()" [disabled]="processing()" style="margin-top:16px;height:44px;padding:0 22px;border:none;border-radius:12px;background:linear-gradient(140deg,#10B981,#059669);color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;box-shadow:0 6px 18px rgba(16,185,129,.35);">
+          {{ processing() ? 'Procesando…' : '💳 Pagar / renovar suscripción' }}
+        </button>
+        @if (pendingOverage() > 0) {
+          <div style="margin-top:10px;font-size:12.5px;color:var(--text-2);">
+            Próximo cobro: <b>{{ money(b.priceMonthly) }}</b> de suscripción + <b style="color:#d97706;">{{ money(pendingOverage()) }}</b> de pedidos extra = <b>{{ money(nextChargeTotal()) }}</b>
+          </div>
+        }
+      } @else if (b.hasPlan) {
+        <div style="margin-top:16px;font-size:13px;color:var(--text-2);">✅ Tu plan gratuito está activo, sin cobros. Mejora a un plan pago abajo cuando lo necesites.</div>
+      } @else {
+        <div style="margin-top:16px;font-size:13px;color:var(--text-2);">Aún no tienes un plan asignado. Contacta al operador.</div>
+      }
+      @if (msg()) { <div style="margin-top:12px;font-size:13px;font-weight:600;color:var(--primary-text);">{{ msg() }}</div> }
+    </div>
+
+    <!-- Planes disponibles (mejorar / cambiar) -->
+    @if (plans().length) {
+      <div style="margin-top:24px;font-size:15px;font-weight:800;">Planes disponibles</div>
+      <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
+        @for (p of plans(); track p.id) {
+          <div style="border-radius:16px;padding:18px;box-shadow:var(--shadow-sm);border:2px solid;"
+               [style.border-color]="isCurrent(p) ? 'var(--primary)' : 'var(--border)'"
+               [style.background]="isCurrent(p) ? 'var(--primary-soft)' : 'var(--surface)'">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <div style="font-size:16px;font-weight:800;">{{ p.name }}</div>
+              @if (isCurrent(p)) { <span style="font-size:10px;font-weight:800;color:var(--primary-text);background:var(--surface);padding:2px 8px;border-radius:20px;">ACTUAL</span> }
+            </div>
+            <div style="font-size:20px;font-weight:800;margin-top:4px;">{{ p.priceMonthly > 0 ? money(p.priceMonthly) : 'Gratis' }}<span style="font-size:12px;color:var(--text-3);font-weight:600;">{{ p.priceMonthly > 0 ? ' /mes' : '' }}</span></div>
+            <div style="margin-top:10px;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-2);">
+              <div>🧾 {{ p.maxOrdersMonth > 0 ? p.maxOrdersMonth + ' pedidos/mes' : 'Pedidos ilimitados' }}</div>
+              <div>🏪 {{ p.maxBranches > 0 ? p.maxBranches : '∞' }} sucursal(es)</div>
+              <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">
+                @if (p.onlinePayments) { <span style="font-size:10px;font-weight:700;background:var(--surface-hover);padding:1px 7px;border-radius:20px;">Pago en línea</span> }
+                @if (p.coupons) { <span style="font-size:10px;font-weight:700;background:var(--surface-hover);padding:1px 7px;border-radius:20px;">Cupones</span> }
+                @if (p.loyalty) { <span style="font-size:10px;font-weight:700;background:var(--surface-hover);padding:1px 7px;border-radius:20px;">Fidelización</span> }
+                @if (p.inventory) { <span style="font-size:10px;font-weight:700;background:var(--surface-hover);padding:1px 7px;border-radius:20px;">Inventario</span> }
+              </div>
+            </div>
+            <button (click)="choosePlan(p)" [disabled]="isCurrent(p) || changingId() === p.id"
+                    style="margin-top:14px;width:100%;height:38px;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;"
+                    [style.background]="isCurrent(p) ? 'var(--surface-hover)' : 'linear-gradient(140deg,#10B981,#059669)'"
+                    [style.color]="isCurrent(p) ? 'var(--text-3)' : '#fff'"
+                    [style.cursor]="isCurrent(p) ? 'default' : 'pointer'">
+              {{ isCurrent(p) ? 'Plan actual' : (changingId() === p.id ? 'Procesando…' : (p.priceMonthly > 0 ? 'Mejorar a este plan' : 'Cambiar a Gratis')) }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Consumo del plan -->
+    @if (b.usage; as u) {
+      @if (u.hasPlan) {
+        <div style="margin-top:20px;font-size:15px;font-weight:800;">Consumo de tu plan</div>
+        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow-sm);">
+            <div style="font-size:12px;color:var(--text-3);font-weight:600;">Pedidos este mes</div>
+            <div style="font-size:22px;font-weight:800;margin-top:4px;">{{ u.ordersThisMonth }}<span style="font-size:14px;color:var(--text-3);font-weight:600;"> / {{ u.maxOrdersMonth > 0 ? u.maxOrdersMonth : '∞' }}</span></div>
+            @if (u.maxOrdersMonth > 0) {
+              <div style="margin-top:8px;height:6px;border-radius:6px;background:var(--surface-hover);overflow:hidden;">
+                <div style="height:100%;border-radius:6px;" [style.width.%]="pct(u.ordersThisMonth, u.maxOrdersMonth)" [style.background]="u.ordersThisMonth >= u.maxOrdersMonth ? '#ef4444' : 'var(--primary)'"></div>
+              </div>
+            }
+            @if (u.overageOrders > 0) {
+              <div style="margin-top:6px;font-size:11.5px;color:#d97706;font-weight:600;">+{{ u.overageOrders }} extra · {{ money(u.overageAmount) }}</div>
+            }
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow-sm);">
+            <div style="font-size:12px;color:var(--text-3);font-weight:600;">Sucursales</div>
+            <div style="font-size:22px;font-weight:800;margin-top:4px;">{{ u.branches }}<span style="font-size:14px;color:var(--text-3);font-weight:600;"> / {{ u.maxBranches > 0 ? u.maxBranches : '∞' }}</span></div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow-sm);">
+            <div style="font-size:12px;color:var(--text-3);font-weight:600;">Usuarios</div>
+            <div style="font-size:22px;font-weight:800;margin-top:4px;">{{ u.users }}<span style="font-size:14px;color:var(--text-3);font-weight:600;"> / {{ u.maxUsers > 0 ? u.maxUsers : '∞' }}</span></div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow-sm);">
+            <div style="font-size:12px;color:var(--text-3);font-weight:600;">Productos</div>
+            <div style="font-size:22px;font-weight:800;margin-top:4px;">{{ u.products }}<span style="font-size:14px;color:var(--text-3);font-weight:600;"> / {{ u.maxProducts > 0 ? u.maxProducts : '∞' }}</span></div>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:var(--text-3);">🗄️ Tu historial de pedidos se conserva {{ u.retentionMonths > 0 ? u.retentionMonths + ' meses' : 'sin límite' }}.</div>
+
+        <!-- Pedidos extra (overage) -->
+        @if (u.maxOrdersMonth > 0) {
+          <div style="margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow-sm);display:flex;align-items:flex-start;gap:14px;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:14px;font-weight:800;">Pedidos extra</div>
+              <div style="font-size:12.5px;color:var(--text-2);margin-top:4px;line-height:1.45;">
+                @if (u.overageAvailable) {
+                  Al activarlo, sigues recibiendo pedidos aunque superes el límite de tu plan. Cada pedido adicional se cobra <b>{{ money(u.overagePrice) }}</b> y se suma a tu próximo pago. Apagado, los pedidos se bloquean al llegar al tope.
+                } @else {
+                  Tu plan no admite pedidos extra. Mejora a un plan superior para poder superar el límite mensual.
+                }
+              </div>
+              @if (u.allowOverage && u.overageOrders > 0) {
+                <div style="margin-top:8px;font-size:12px;color:#d97706;font-weight:700;">{{ u.overageOrders }} pedido(s) extra pendiente(s) · {{ money(u.overageAmount) }} se sumarán a tu próximo pago</div>
+              }
+            </div>
+            <button (click)="toggleOverage()" [disabled]="!u.overageAvailable || overageSaving()" aria-label="Activar pedidos extra"
+                    [style]="'flex-shrink:0;position:relative;width:46px;height:26px;border:none;border-radius:20px;cursor:' + (u.overageAvailable ? 'pointer' : 'not-allowed') + ';transition:background .15s;background:' + (u.allowOverage ? 'var(--primary)' : 'var(--surface-hover)') + ';opacity:' + (u.overageAvailable ? '1' : '.5') + ';'">
+              <span [style]="'position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s;transform:translateX(' + (u.allowOverage ? '20px' : '0') + ');'"></span>
+            </button>
+          </div>
+        }
+      }
+    }
+
+    <!-- Historial -->
+    <div style="margin-top:24px;font-size:15px;font-weight:800;">Historial de pagos</div>
+    <div style="margin-top:12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-sm);overflow:hidden;">
+      @for (p of b.payments; track $index) {
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);">
+          <div style="width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;" [style.background]="p.isPaid ? 'var(--primary-soft)' : 'var(--surface-hover)'">{{ p.isPaid ? '✅' : '⏳' }}</div>
+          <div style="flex:1;">
+            <div style="font-size:13.5px;font-weight:700;">{{ p.planName }}</div>
+            <div style="font-size:11.5px;color:var(--text-3);">{{ fmtDate(p.isPaid ? p.paidAt : p.createdAt) }} · {{ p.isPaid ? 'Pagado' : 'Pendiente' }}</div>
+          </div>
+          <div style="font-size:14px;font-weight:800;">{{ money(p.amount) }}</div>
+        </div>
+      } @empty {
+        <div style="padding:24px;text-align:center;color:var(--text-3);font-size:12.5px;">Aún no hay pagos registrados.</div>
+      }
+    </div>
+  }
+</div>

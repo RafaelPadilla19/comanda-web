@@ -1,0 +1,153 @@
+<div class="menu-shell" style="display:flex;height:calc(100vh - 64px);">
+  <!-- CATEGORY RAIL -->
+  <div class="menu-rail" style="width:178px;flex-shrink:0;border-right:1px solid var(--border);padding:18px 12px;display:flex;flex-direction:column;gap:3px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--text-3);text-transform:uppercase;padding:0 10px 8px;">Categorías</div>
+    @for (c of menuCats(); track c.value) {
+      <button (click)="store.menuCat.set(c.value)" [style]="c.style"><span>{{ c.label }}</span><span [style]="c.countStyle">{{ c.count }}</span></button>
+    }
+    <button class="dashed-btn" (click)="openCategory()" style="margin-top:8px;display:flex;align-items:center;gap:8px;width:100%;border:1px dashed var(--border-strong);cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;padding:9px 12px;border-radius:9px;background:transparent;color:var(--text-3);">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nueva categoría
+    </button>
+  </div>
+
+  <!-- EDITOR LIST -->
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <div style="padding:18px 22px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:16px;font-weight:800;letter-spacing:-.3px;">{{ catLabel() }}</div>
+        <div style="font-size:12.5px;color:var(--text-3);margin-top:1px;">Arrastra para reordenar · activa o desactiva la disponibilidad</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        @if (currentCatId()) {
+          <button class="icon-soft-btn" (click)="renameCurrentCategory()" aria-label="Renombrar categoría" title="Renombrar categoría" style="width:36px;height:36px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text-3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </button>
+          <button class="icon-soft-btn" (click)="deleteCurrentCategory()" aria-label="Eliminar categoría" title="Eliminar categoría" style="width:36px;height:36px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--red, #ef4444);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          </button>
+        }
+        <button class="solid-btn" (click)="openProduct()" style="height:36px;padding:0 14px;border-radius:9px;border:none;background:var(--primary);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Agregar producto</button>
+      </div>
+    </div>
+    <div class="menu-scroll" style="flex:1;overflow-y:auto;padding:14px 22px;display:flex;flex-direction:column;gap:10px;">
+      @for (p of menuItems(); track p.id) {
+        <div [style]="'display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;box-shadow:var(--shadow-sm);opacity:' + p.rowOpacity + ';'">
+          <svg style="cursor:grab;flex-shrink:0;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/></svg>
+          <div style="width:46px;height:46px;border-radius:10px;background:var(--surface-hover);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">{{ p.emoji }}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:9px;"><span style="font-size:14px;font-weight:700;">{{ p.name }}</span></div>
+            <div style="font-size:12px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.desc }}</div>
+            <div style="font-size:11px;color:var(--text-3);margin-top:4px;">{{ p.metaLabel }}</div>
+          </div>
+          <div style="font-size:15px;font-weight:800;flex-shrink:0;">{{ p.priceLabel }}</div>
+          <button (click)="toggleAvail(p.id, p.available)" aria-label="Disponibilidad" [style]="p.switchStyle"><span [style]="p.knobStyle"></span></button>
+          <button class="icon-soft-btn" (click)="openProduct(p.id)" aria-label="Editar" style="width:34px;height:34px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text-3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- MOBILE PREVIEW -->
+  <div class="menu-preview" style="width:324px;flex-shrink:0;border-left:1px solid var(--border);background:var(--surface-2);display:flex;flex-direction:column;align-items:center;padding:22px 0;overflow-y:auto;">
+    <div style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:16px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/></svg>Vista previa móvil
+    </div>
+    <div style="width:288px;height:580px;background:var(--surface);border:9px solid #16191B;border-radius:38px;box-shadow:var(--shadow-lg);overflow:hidden;position:relative;display:flex;flex-direction:column;">
+      <div style="position:absolute;top:9px;left:50%;transform:translateX(-50%);width:90px;height:22px;background:#16191B;border-radius:0 0 14px 14px;z-index:3;"></div>
+      <div style="height:96px;background:linear-gradient(135deg,#10B981,#059669);padding:28px 18px 0;flex-shrink:0;">
+        <div style="color:#fff;font-size:16px;font-weight:800;">Sabores del Puerto</div>
+        <div style="color:rgba(255,255,255,.85);font-size:11px;margin-top:2px;">Cocina marina · Menú digital</div>
+      </div>
+      <div style="display:flex;gap:6px;padding:12px 14px 8px;overflow-x:auto;flex-shrink:0;">
+        @for (c of previewCats(); track c.label) {
+          <span [style]="c.style">{{ c.label }}</span>
+        }
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:4px 14px 16px;display:flex;flex-direction:column;gap:12px;">
+        @for (p of previewItems(); track p.id) {
+          <div style="display:flex;gap:11px;align-items:center;">
+            <div style="width:54px;height:54px;border-radius:12px;background:var(--surface-hover);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">{{ p.emoji }}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:12.5px;font-weight:700;color:var(--text);">{{ p.name }}</div>
+              <div style="font-size:10.5px;color:var(--text-3);line-height:1.3;margin-top:2px;">{{ p.desc }}</div>
+              <div style="font-size:12.5px;font-weight:800;color:var(--primary-text);margin-top:4px;">{{ p.priceLabel }}</div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (prodOpen()) {
+  <app-modal [title]="editId() ? 'Editar producto' : 'Nuevo producto'" (close)="prodOpen.set(false)">
+    <form (ngSubmit)="submitProduct()">
+      <div class="cmd-row">
+        <label class="cmd-field" style="flex:0 0 80px;"><span>Emoji</span>
+          <input class="cmd-input" name="e" [ngModel]="pEmoji()" (ngModelChange)="pEmoji.set($event)" maxlength="4" style="text-align:center;" /></label>
+        <label class="cmd-field"><span>Nombre</span>
+          <input class="cmd-input" name="n" [ngModel]="pName()" (ngModelChange)="pName.set($event)" placeholder="Ej. Pupusas Revueltas" required /></label>
+      </div>
+      <div class="cmd-row">
+        <label class="cmd-field"><span>Precio (US$)</span>
+          <input class="cmd-input" type="number" min="0" step="0.01" name="pr" [ngModel]="pPrice()" (ngModelChange)="pPrice.set($event)" placeholder="0.00" required /></label>
+        <label class="cmd-field"><span>Categoría</span>
+          <select class="cmd-select" name="cat" [ngModel]="pCategoryId()" (ngModelChange)="pCategoryId.set($event)">
+            @for (c of store.categories(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+          </select></label>
+      </div>
+      <label class="cmd-field"><span>Descripción</span>
+        <textarea class="cmd-input" name="d" [ngModel]="pDesc()" (ngModelChange)="pDesc.set($event)" placeholder="Breve descripción"></textarea></label>
+
+      <!-- Variantes (elección única, con costo adicional) -->
+      <div style="margin-top:6px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:12px;font-weight:700;color:var(--text-2);">Variantes (el cliente elige una)</span>
+          <button type="button" (click)="addVariant()" style="font-size:12px;font-weight:700;color:var(--primary-text);background:var(--primary-soft);border:none;border-radius:7px;padding:3px 9px;cursor:pointer;font-family:inherit;">+ Agregar</button>
+        </div>
+        @for (v of pVariants(); track $index) {
+          <div style="display:flex;gap:6px;margin-bottom:6px;">
+            <input class="cmd-input" [ngModel]="v.name" (ngModelChange)="setVariantName($index, $event)" [name]="'vn'+$index" placeholder="Ej. Familiar" style="flex:1;" />
+            <input class="cmd-input" type="number" min="0" step="0.01" [ngModel]="v.price" (ngModelChange)="setVariantPrice($index, $event)" [name]="'vp'+$index" placeholder="+US$" style="width:90px;" />
+            <button type="button" (click)="removeVariant($index)" aria-label="Quitar" style="width:36px;border:1px solid var(--border);background:var(--surface-2);border-radius:9px;color:var(--red);cursor:pointer;">✕</button>
+          </div>
+        }
+      </div>
+
+      <!-- Extras (varios, con costo adicional) -->
+      <div style="margin-top:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:12px;font-weight:700;color:var(--text-2);">Extras / complementos (suma al precio)</span>
+          <button type="button" (click)="addExtra()" style="font-size:12px;font-weight:700;color:var(--primary-text);background:var(--primary-soft);border:none;border-radius:7px;padding:3px 9px;cursor:pointer;font-family:inherit;">+ Agregar</button>
+        </div>
+        @for (ex of pExtras(); track $index) {
+          <div style="display:flex;gap:6px;margin-bottom:6px;">
+            <input class="cmd-input" [ngModel]="ex.name" (ngModelChange)="setExtraName($index, $event)" [name]="'xn'+$index" placeholder="Ej. Queso extra" style="flex:1;" />
+            <input class="cmd-input" type="number" min="0" step="0.01" [ngModel]="ex.price" (ngModelChange)="setExtraPrice($index, $event)" [name]="'xp'+$index" placeholder="+US$" style="width:90px;" />
+            <button type="button" (click)="removeExtra($index)" aria-label="Quitar" style="width:36px;border:1px solid var(--border);background:var(--surface-2);border-radius:9px;color:var(--red);cursor:pointer;">✕</button>
+          </div>
+        }
+      </div>
+
+      <div class="cmd-actions">
+        <button type="button" class="cmd-cancel" (click)="prodOpen.set(false)">Cancelar</button>
+        <button type="submit" class="cmd-submit" [disabled]="!pName().trim() || pPrice() == null || !pCategoryId()">{{ editId() ? 'Guardar' : 'Crear producto' }}</button>
+      </div>
+    </form>
+  </app-modal>
+}
+
+@if (catOpen()) {
+  <app-modal [title]="catEditId() ? 'Renombrar categoría' : 'Nueva categoría'" (close)="catOpen.set(false)">
+    <form (ngSubmit)="submitCategory()">
+      <label class="cmd-field"><span>Nombre de la categoría</span>
+        <input class="cmd-input" name="c" [ngModel]="cName()" (ngModelChange)="cName.set($event)" placeholder="Ej. Especiales del día" required /></label>
+      <div class="cmd-actions">
+        <button type="button" class="cmd-cancel" (click)="catOpen.set(false)">Cancelar</button>
+        <button type="submit" class="cmd-submit" [disabled]="!cName().trim()">{{ catEditId() ? 'Guardar' : 'Crear categoría' }}</button>
+      </div>
+    </form>
+  </app-modal>
+}

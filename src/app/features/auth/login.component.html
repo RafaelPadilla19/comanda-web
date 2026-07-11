@@ -1,0 +1,40 @@
+<div class="login-wrap" [attr.data-theme]="'light'">
+  <div class="login-card">
+    <div class="brand">
+      <div class="logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18"/><path d="M12 3a8 8 0 0 1 8 8H4a8 8 0 0 1 8-8Z"/><path d="M6 19h12"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">Comanda</div>
+        <div class="brand-sub">Sabores del Puerto</div>
+      </div>
+    </div>
+
+    <h1 class="title">Inicia sesión</h1>
+    <p class="subtitle">Accede al panel de gestión de tu restaurante.</p>
+
+    <form (ngSubmit)="submit()">
+      <label class="field">
+        <span>Correo</span>
+        <input type="email" name="email" [ngModel]="email()" (ngModelChange)="email.set($event)"
+               autocomplete="username" placeholder="tucorreo@restaurante.sv" required />
+      </label>
+      <label class="field">
+        <span>Contraseña</span>
+        <input type="password" name="password" [ngModel]="password()" (ngModelChange)="password.set($event)"
+               autocomplete="current-password" placeholder="••••••••" required />
+      </label>
+
+      @if (error()) {
+        <div class="error">{{ error() }}</div>
+      }
+
+      <button type="submit" class="submit" [disabled]="loading()">
+        {{ loading() ? 'Ingresando…' : 'Entrar' }}
+      </button>
+    </form>
+
+    <div class="hint">¿No tienes cuenta? <a routerLink="/registro"><strong>Crea tu restaurante</strong></a></div>
+    <div class="hint">Demo: <strong>rosa&#64;saboresdelpuerto.sv</strong> · contraseña <strong>Comanda123*</strong></div>
+  </div>
+</div>

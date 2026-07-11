@@ -1,0 +1,448 @@
+<div style="padding:24px 26px;max-width:1100px;margin:0 auto;">
+  <div style="font-size:20px;font-weight:800;letter-spacing:-.4px;">Configuración</div>
+  <div style="font-size:13px;color:var(--text-3);margin-top:2px;">Administra usuarios, hardware y operación del negocio</div>
+  <div style="display:flex;gap:26px;border-bottom:1px solid var(--border);margin:18px 0 22px;">
+    @for (t of tabs(); track t.value) {
+      <button class="tab-btn" (click)="setTab(t.value)" [style]="t.style">{{ t.label }}</button>
+    }
+  </div>
+
+  <!-- USUARIOS -->
+  @if (store.settingsTab() === 'usuarios') {
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div style="font-size:13px;color:var(--text-2);">{{ usersSummary() }}</div>
+      <button class="solid-btn" (click)="openUser()" style="height:36px;padding:0 14px;border-radius:9px;border:none;background:var(--primary);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Invitar usuario</button>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-sm);overflow:hidden;">
+      <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:680px;">
+        <thead><tr style="color:var(--text-3);font-size:11px;text-transform:uppercase;letter-spacing:.4px;background:var(--surface-2);">
+          <th style="text-align:left;font-weight:700;padding:12px 18px;">Usuario</th>
+          <th style="text-align:left;font-weight:700;padding:12px;">Rol</th>
+          <th style="text-align:left;font-weight:700;padding:12px;">Sucursal</th>
+          <th style="text-align:left;font-weight:700;padding:12px;">Estado</th>
+          <th style="text-align:right;font-weight:700;padding:12px 18px;"></th>
+        </tr></thead>
+        <tbody>
+          @for (u of users(); track u.email) {
+            <tr style="border-top:1px solid var(--border);">
+              <td style="padding:12px 18px;">
+                <div style="display:flex;align-items:center;gap:11px;">
+                  <div [style]="'width:34px;height:34px;border-radius:9px;background:' + u.avatar + ';color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;'">{{ u.init }}</div>
+                  <div><div style="font-weight:700;">{{ u.name }}</div><div style="font-size:11.5px;color:var(--text-3);">{{ u.email }}</div></div>
+                </div>
+              </td>
+              <td style="padding:12px;"><span [style]="u.roleStyle">{{ u.role }}</span></td>
+              <td style="padding:12px;color:var(--text-2);">{{ u.branch }}</td>
+              <td style="padding:12px;"><span [style]="u.statusStyle"><span [style]="u.dotStyle"></span>{{ u.statusLabel }}</span></td>
+              <td style="padding:12px 18px;text-align:right;"><button class="icon-soft-btn" (click)="openEdit(u)" aria-label="Editar usuario" style="width:30px;height:30px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--text-3);cursor:pointer;font-family:inherit;">⋯</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      </div>
+    </div>
+  }
+
+  <!-- IMPRESORAS -->
+  @if (store.settingsTab() === 'impresoras') {
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      @for (p of printers(); track p.key) {
+        <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow-sm);">
+          <div style="width:42px;height:42px;border-radius:10px;background:var(--surface-hover);display:flex;align-items:center;justify-content:center;color:var(--text-2);flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+          </div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:14px;font-weight:700;">{{ p.name }}</span><span [style]="p.statusStyle">{{ p.statusLabel }}</span></div>
+            <div style="font-size:12px;color:var(--text-3);margin-top:2px;">{{ p.model }} · {{ p.use }} · {{ p.conn }}</div>
+          </div>
+          <button class="ghost-btn" (click)="testPrinter(p.key)" style="height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;font-family:inherit;">Prueba</button>
+          <button (click)="togglePrinter(p.key)" aria-label="Activar" [style]="p.switchStyle"><span [style]="p.knobStyle"></span></button>
+        </div>
+      }
+      <button class="dashed-btn" (click)="openPrinter()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:1px dashed var(--border-strong);cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;padding:14px;border-radius:var(--r);background:transparent;color:var(--text-3);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Agregar impresora</button>
+    </div>
+  }
+
+  <!-- SUCURSALES -->
+  @if (store.settingsTab() === 'sucursales') {
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;">
+      @for (b of branchCards(); track b.name) {
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow-sm);">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+            <div style="width:40px;height:40px;border-radius:10px;background:var(--primary-soft);color:var(--primary-text);display:flex;align-items:center;justify-content:center;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-3"/><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/></svg>
+            </div>
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--primary-text);background:var(--primary-soft);padding:3px 10px;border-radius:20px;">Activa</span>
+          </div>
+          <div style="font-size:15px;font-weight:700;">{{ b.name }}</div>
+          <div style="font-size:12.5px;color:var(--text-3);margin-top:5px;line-height:1.4;">{{ b.addr }}</div>
+          <div style="font-size:12.5px;color:var(--text-2);margin-top:10px;display:flex;align-items:center;gap:7px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{{ b.hours }}</div>
+          @if (b.whatsapp) {
+            <div style="font-size:12.5px;color:var(--text-2);margin-top:6px;display:flex;align-items:center;gap:7px;">🟢 WhatsApp: {{ b.whatsapp }}</div>
+          } @else {
+            <div style="font-size:12.5px;color:var(--text-3);margin-top:6px;display:flex;align-items:center;gap:7px;">⚪ Sin WhatsApp configurado</div>
+          }
+          <div style="display:flex;gap:8px;margin-top:14px;">
+            <button class="ghost-btn" (click)="openEditBranch(b)" style="flex:1;height:36px;border-radius:9px;border:1px solid var(--border);background:var(--surface-2);font-size:12.5px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              Editar
+            </button>
+            <button class="ghost-btn" (click)="openQr(b)" style="flex:1;height:36px;border-radius:9px;border:1px solid var(--border);background:var(--surface-2);font-size:12.5px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 21v.01M21 14v.01M14 21v.01"/></svg>
+              QR
+            </button>
+          </div>
+        </div>
+      }
+      <button class="dashed-btn" (click)="openBranch()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:160px;border:1px dashed var(--border-strong);cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;border-radius:var(--r);background:transparent;color:var(--text-3);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Agregar sucursal</button>
+    </div>
+  }
+
+  <!-- ENTREGAS (zonas + repartidores) -->
+  @if (store.settingsTab() === 'entregas') {
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;">
+      <!-- Zonas -->
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div>
+            <div style="font-size:14px;font-weight:700;">Zonas de entrega</div>
+            <div style="font-size:12px;color:var(--text-3);">Define la tarifa de envío por zona. Sin comisiones.</div>
+          </div>
+          <button class="solid-btn" (click)="openZone()" style="height:34px;padding:0 12px;border-radius:9px;border:none;background:var(--primary);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">+ Zona</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          @for (z of zonesRaw(); track z.id) {
+            <div style="display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 15px;box-shadow:var(--shadow-sm);" [style.opacity]="z.isActive ? '1' : '.55'">
+              <div style="width:38px;height:38px;border-radius:10px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;font-size:18px;">🛵</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13.5px;font-weight:700;">{{ z.name }}</div>
+                <div style="font-size:12px;color:var(--primary-text);font-weight:700;">{{ z.fee > 0 ? money(z.fee) : 'Gratis' }}</div>
+              </div>
+              <button (click)="toggleZone(z)" title="Activar/Desactivar" style="border:1px solid var(--border);background:var(--surface-2);border-radius:7px;height:30px;padding:0 9px;font-size:11px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">{{ z.isActive ? 'Activa' : 'Inactiva' }}</button>
+              <button (click)="openZone(z)" aria-label="Editar" style="border:1px solid var(--border);background:var(--surface-2);border-radius:7px;width:30px;height:30px;cursor:pointer;color:var(--text-2);display:flex;align-items:center;justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+              <button (click)="deleteZone(z)" aria-label="Eliminar" style="border:1px solid var(--border);background:var(--surface-2);border-radius:7px;width:30px;height:30px;cursor:pointer;color:var(--red);display:flex;align-items:center;justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
+            </div>
+          } @empty {
+            <div style="font-size:12.5px;color:var(--text-3);padding:18px;text-align:center;border:1px dashed var(--border);border-radius:12px;">Aún no hay zonas. Agrega la primera.</div>
+          }
+        </div>
+      </div>
+
+      <!-- Repartidores -->
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div>
+            <div style="font-size:14px;font-weight:700;">Repartidores</div>
+            <div style="font-size:12px;color:var(--text-3);">Tu propia flota. Los asignas a los pedidos a domicilio.</div>
+          </div>
+          <button class="solid-btn" (click)="openDriver()" style="height:34px;padding:0 12px;border-radius:9px;border:none;background:var(--primary);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">+ Repartidor</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          @for (d of driversRaw(); track d.id) {
+            <div style="display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 15px;box-shadow:var(--shadow-sm);" [style.opacity]="d.isActive ? '1' : '.55'">
+              <div style="width:38px;height:38px;border-radius:10px;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;font-size:18px;">🧑‍✈️</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13.5px;font-weight:700;">{{ d.name }}</div>
+                <div style="font-size:12px;color:var(--text-3);">{{ d.phone || 'Sin teléfono' }}</div>
+              </div>
+              <button (click)="toggleDriver(d)" style="border:1px solid var(--border);background:var(--surface-2);border-radius:7px;height:30px;padding:0 9px;font-size:11px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">{{ d.isActive ? 'Activo' : 'Inactivo' }}</button>
+              <button (click)="openDriver(d)" aria-label="Editar" style="border:1px solid var(--border);background:var(--surface-2);border-radius:7px;width:30px;height:30px;cursor:pointer;color:var(--text-2);display:flex;align-items:center;justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+            </div>
+          } @empty {
+            <div style="font-size:12.5px;color:var(--text-3);padding:18px;text-align:center;border:1px dashed var(--border);border-radius:12px;">Aún no hay repartidores.</div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- PROMOCIONES (fidelización + cupones) -->
+  @if (store.settingsTab() === 'promociones') {
+    <!-- Fidelización -->
+    @if (canLoyalty()) {
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow-sm);max-width:760px;margin-bottom:22px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div style="font-size:14px;font-weight:800;">⭐ Programa de fidelización</div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--text-2);">
+          <input type="checkbox" [ngModel]="loyEnabled()" (ngModelChange)="loyEnabled.set($event)" name="le" style="width:16px;height:16px;cursor:pointer;" />
+          {{ loyEnabled() ? 'Activado' : 'Desactivado' }}
+        </label>
+      </div>
+      <div style="font-size:12.5px;color:var(--text-3);margin-bottom:14px;">Tus clientes acumulan puntos por sus compras en línea y los canjean por descuentos.</div>
+      <div class="cmd-row">
+        <label class="cmd-field"><span>Puntos por cada US$1 gastado</span>
+          <input class="cmd-input" type="number" min="0" step="0.5" [ngModel]="loyEarn()" (ngModelChange)="loyEarn.set($event)" name="learn" [disabled]="!loyEnabled()" /></label>
+        <label class="cmd-field"><span>Puntos para US$1 de descuento</span>
+          <input class="cmd-input" type="number" min="1" step="1" [ngModel]="loyRedeem()" (ngModelChange)="loyRedeem.set($event)" name="lred" [disabled]="!loyEnabled()" /></label>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:6px;">
+        <button class="cmd-submit" (click)="saveLoyalty()" style="height:36px;">Guardar fidelización</button>
+        @if (loySaved()) { <span style="font-size:12.5px;color:var(--primary-text);font-weight:700;">✓ Guardado</span> }
+      </div>
+    </div>
+    } @else {
+      <div style="background:var(--surface);border:1px dashed var(--border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow-sm);max-width:760px;margin-bottom:22px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:20px;">🔒</span>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:800;">⭐ Programa de fidelización</div>
+          <div style="font-size:12.5px;color:var(--text-2);margin-top:2px;">Tu plan <b>{{ planName() }}</b> no incluye fidelización. Mejora tu plan para que tus clientes acumulen puntos.</div>
+        </div>
+        <a routerLink="/suscripcion" style="font-size:12.5px;font-weight:700;color:var(--primary-text);background:var(--primary-soft);padding:8px 14px;border-radius:10px;text-decoration:none;white-space:nowrap;">Mejorar plan</a>
+      </div>
+    }
+
+    @if (canCoupons()) {
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;max-width:760px;">
+      <div style="font-size:13px;color:var(--text-2);">Códigos de descuento para tu tienda y el punto de venta.</div>
+      <button class="solid-btn" (click)="openCoupon()" style="height:36px;padding:0 14px;border-radius:9px;border:none;background:var(--primary);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">+ Cupón</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;max-width:760px;">
+      @for (c of couponCards(); track c.id) {
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--shadow-sm);" [style.opacity]="c.active ? '1' : '.55'">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-size:15px;font-weight:800;letter-spacing:.5px;font-family:monospace;background:var(--primary-soft);color:var(--primary-text);padding:3px 10px;border-radius:8px;">{{ c.code }}</span>
+            <span style="font-size:11px;font-weight:700;" [style.color]="c.active ? 'var(--primary-text)' : 'var(--text-3)'">{{ c.active ? 'Activo' : 'Inactivo' }}</span>
+          </div>
+          <div style="font-size:14px;font-weight:700;">{{ c.valueLabel }}</div>
+          <div style="font-size:12px;color:var(--text-3);margin-top:4px;">{{ c.meta }}</div>
+          <div style="display:flex;gap:8px;margin-top:13px;">
+            <button class="ghost-btn" (click)="openCoupon(couponsRaw()[$index])" style="flex:1;height:34px;border-radius:9px;border:1px solid var(--border);background:var(--surface-2);font-size:12.5px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">Editar</button>
+            <button class="ghost-btn" (click)="deleteCoupon(c)" style="width:40px;height:34px;border-radius:9px;border:1px solid var(--border);background:var(--surface-2);font-size:13px;color:var(--red);cursor:pointer;font-family:inherit;">🗑</button>
+          </div>
+        </div>
+      } @empty {
+        <div style="font-size:12.5px;color:var(--text-3);padding:24px;text-align:center;border:1px dashed var(--border);border-radius:14px;grid-column:1/-1;">Aún no tienes cupones. Crea el primero (ej. BIENVENIDO 10%).</div>
+      }
+    </div>
+    } @else {
+      <div style="background:var(--surface);border:1px dashed var(--border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow-sm);max-width:760px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:20px;">🔒</span>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:800;">🎟️ Cupones y promociones</div>
+          <div style="font-size:12.5px;color:var(--text-2);margin-top:2px;">Tu plan <b>{{ planName() }}</b> no incluye cupones. Mejora tu plan para crear códigos de descuento.</div>
+        </div>
+        <a routerLink="/suscripcion" style="font-size:12.5px;font-weight:700;color:var(--primary-text);background:var(--primary-soft);padding:8px 14px;border-radius:10px;text-decoration:none;white-space:nowrap;">Mejorar plan</a>
+      </div>
+    }
+  }
+
+</div>
+
+@if (userOpen()) {
+  <app-modal title="Invitar usuario" (close)="userOpen.set(false)">
+    <form (ngSubmit)="submitUser()">
+      @if (uError()) { <div class="cmd-err">{{ uError() }}</div> }
+      <label class="cmd-field"><span>Nombre</span>
+        <input class="cmd-input" name="n" [ngModel]="uName()" (ngModelChange)="uName.set($event)" placeholder="Nombre y apellido" required /></label>
+      <label class="cmd-field"><span>Correo</span>
+        <input class="cmd-input" type="email" name="em" [ngModel]="uEmail()" (ngModelChange)="uEmail.set($event)" placeholder="correo@saboresdelpuerto.sv" required /></label>
+      <label class="cmd-field"><span>Contraseña (mín. 8)</span>
+        <input class="cmd-input" type="password" name="pw" [ngModel]="uPassword()" (ngModelChange)="uPassword.set($event)" placeholder="••••••••" required /></label>
+      <div class="cmd-row">
+        <label class="cmd-field"><span>Rol</span>
+          <select class="cmd-select" name="r" [ngModel]="uRole()" (ngModelChange)="uRole.set($event)">
+            @for (r of roles; track r) { <option [value]="r">{{ r }}</option> }
+          </select></label>
+        <label class="cmd-field"><span>Sucursal</span>
+          <select class="cmd-select" name="b" [ngModel]="uBranchId()" (ngModelChange)="uBranchId.set($event)">
+            <option value="">Todas las sucursales</option>
+            @for (b of branchOptions(); track b.id) { <option [value]="b.id">{{ b.name }}</option> }
+          </select></label>
+      </div>
+      <div class="cmd-actions">
+        <button type="button" class="cmd-cancel" (click)="userOpen.set(false)">Cancelar</button>
+        <button type="submit" class="cmd-submit" [disabled]="!uName().trim() || !uEmail().trim() || uPassword().length < 8">Invitar</button>
+      </div>
+    </form>
+  </app-modal>
+}
+
+@if (branchOpen()) {
+  <app-modal title="Agregar sucursal" (close)="branchOpen.set(false)">
+    <form (ngSubmit)="submitBranch()">
+      <label class="cmd-field"><span>Nombre</span>
+        <input class="cmd-input" name="n" [ngModel]="bName()" (ngModelChange)="bName.set($event)" placeholder="Ej. Sucursal Soyapango" required /></label>
+      <label class="cmd-field"><span>Dirección</span>
+        <input class="cmd-input" name="a" [ngModel]="bAddress()" (ngModelChange)="bAddress.set($event)" placeholder="Dirección completa" required /></label>
+      <label class="cmd-field"><span>Horario</span>
+        <input class="cmd-input" name="h" [ngModel]="bHours()" (ngModelChange)="bHours.set($event)" /></label>
+      <label class="cmd-field"><span>WhatsApp para pedidos (con código de país)</span>
+        <input class="cmd-input" name="w" [ngModel]="bWhatsapp()" (ngModelChange)="bWhatsapp.set($event)" placeholder="Ej. 503 7000 0000" inputmode="tel" /></label>
+      <div class="cmd-actions">
+        <button type="button" class="cmd-cancel" (click)="branchOpen.set(false)">Cancelar</button>
+        <button type="submit" class="cmd-submit" [disabled]="!bName().trim() || !bAddress().trim()">Crear sucursal</button>
+      </div>
+    </form>
+  </app-modal>
+}
+
+@if (editBranchOpen()) {
+  <app-modal title="Editar sucursal" (close)="editBranchOpen.set(false)">
+    <form (ngSubmit)="submitEditBranch()">
+      <label class="cmd-field"><span>Nombre</span>
+        <input class="cmd-input" name="n" [ngModel]="ebName()" (ngModelChange)="ebName.set($event)" required /></label>
+      <label class="cmd-field"><span>Dirección</span>
+        <input class="cmd-input" name="a" [ngModel]="ebAddress()" (ngModelChange)="ebAddress.set($event)" required /></label>
+      <label class="cmd-field"><span>Horario</span>
+        <input class="cmd-input" name="h" [ngModel]="ebHours()" (ngModelChange)="ebHours.set($event)" /></label>
+      <label class="cmd-field"><span>WhatsApp para pedidos (con código de país)</span>
+        <input class="cmd-input" name="w" [ngModel]="ebWhatsapp()" (ngModelChange)="ebWhatsapp.set($event)" placeholder="Ej. 503 7000 0000" inputmode="tel" /></label>
+      <label class="cmd-field" style="flex-direction:row;align-items:center;gap:10px;cursor:pointer;">
+        <input type="checkbox" name="act" [ngModel]="ebActive()" (ngModelChange)="ebActive.set($event)" style="width:16px;height:16px;cursor:pointer;" />
+        <span style="margin:0;">Sucursal activa (visible en la tienda)</span></label>
+      <div class="cmd-actions">
+        <button type="button" class="cmd-cancel" (click)="editBranchOpen.set(false)">Cancelar</button>
+        <button type="submit" class="cmd-submit" [disabled]="!ebName().trim() || !ebAddress().trim()">Guardar cambios</button>
+      </div>
+    </form>
+  </app-modal>
+}
+
+@if (couponOpen()) {
+  <app-modal [title]="cpId() ? 'Editar cupón' : 'Nuevo cupón'" (close)="couponOpen.set(false)">
+    <form (ngSubmit)="submitCoupon()">
+      <label class="cmd-field"><span>Código</span>
+        <input class="cmd-input" name="c" [ngModel]="cpCode()" (ngModelChange)="cpCode.set($event)" placeholder="Ej. BIENVENIDO" style="text-transform:uppercase;" required /></label>
+      <div class="cmd-row">
+        <label class="cmd-field"><span>Tipo</span>
+          <select class="cmd-select" name="t" [ngModel]="cpType()" (ngModelChange)="cpType.set($event)">
+            <option value="Percentage">Porcentaje (%)</option>
+            <option value="Fixed">Monto fijo (US$)</option>
+          </select></label>
+        <label class="cmd-field"><span>{{ cpType() === 'Percentage' ? 'Porcentaje' : 'Monto (US$)' }}</span>
+          <input class="cmd-input" type="number" min="0" step="0.01" name="v" [ngModel]="cpValue()" (ngModelChange)="cpValue.set($event)" required /></label>
+      </div>
+      <div class="cmd-row">
+        <label class="cmd-field"><span>Pedido mínimo (US$)</span>
+          <input class="cmd-input" type="number" min="0" step="0.01" name="m" [ngModel]="cpMinOrder()" (ngModelChange)="cpMinOrder.set($event)" placeholder="0.00" /></label>
+        <label class="cmd-field"><span>Usos máx. (opcional)</span>
+          <input class="cmd-input" type="number" min="1" name="mx" [ngModel]="cpMax()" (ngModelChange)="cpMax.set($event)" placeholder="Ilimitado" /></label>
+      </div>
+      <label class="cmd-field" style="flex-direction:row;align-items:center;gap:10px;cursor:pointer;">
+        <input type="checkbox" name="a" [ngModel]="cpActive()" (ngModelChange)="cpActive.set($event)" style="width:16px;height:16px;cursor:pointer;" />
+        <span style="margin:0;">Cupón activo</span></label>
+      <div class="cmd-actions">
+        <button type="button" class="cmd-cancel" (click)="couponOpen.set(false)">Cancelar</button>
+        <button type="submit" class="cmd-submit" [disabled]="!cpCode().trim()">{{ cpId() ? 'Guardar' : 'Crear cupón' }}</button>
+      </div>
+    </form>
+  </app-modal>
+}
+
+@if (qrOpen()) {
+  <app-modal title="QR de la tienda" (close)="qrOpen.set(false)">
+    <div style="text-align:center;">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px;">{{ qrBranchName() }}</div>
+      <div style="font-size:12.5px;color:var(--text-3);margin-bottom:16px;">Tus clientes escanean este código para ver el menú y pedir en línea.</div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px;display:inline-block;min-width:220px;min-height:220px;">
+        @if (qrImage()) {
+          <img [src]="qrImage()" alt="QR de la tienda" style="width:220px;height:220px;display:block;" />
+        } @else {
+          <div style="width:220px;height:220px;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:13px;">Generando…</div>
+        }
+      </div>
+      <div style="font-size:11.5px;color:var(--text-3);margin-top:12px;word-break:break-all;">{{ qrUrl() }}</div>
+      <div style="display:flex;gap:10px;margin-top:18px;">
+        <button type="button" class="cmd-cancel" style="flex:1;" (click)="downloadQr()">⬇ Descargar PNG</button>
+        <button type="button" class="cmd-submit" style="flex:1;" (click)="printQr()">🖨 Imprimir afiche</button>
+      </div>
+    </div>
+  </app-modal>
+}
+
+@if (zoneOpen()) {
+  <app-modal [title]="zId() ? 'Editar zona' : 'Nueva zona de entrega'" (close)="zoneOpen.set(false)">
+    <form (ngSubmit)="submitZone()">
+      <label class="cmd-field"><span>Nombre de la zona</span>
+        <input class="cmd-input" name="n" [ngModel]="zName()" (ngModelChange)="zName.set($event)" placeholder="Ej. Colonia Escalón" required /></label>
+      <label class="cmd-field"><span>Tarifa de envío (US$)</span>
+        <input class="cmd-input" type="number" step="0.01" min="0" name="f" [ngModel]="zFee()" (ngModelChange)="zFee.set($event)" placeholder="2.50" /></label>
+      <label class="cmd-field" style="flex-direction:row;align-items:center;gap:10px;cursor:pointer;">
+        <input type="checkbox" name="a" [ngModel]="zActive()" (ngModelChange)="zActive.set($event)" style="width:16px;height:16px;cursor:pointer;" />
+        <span style="margin:0;">Zona activa (visible en la tienda)</span></label>
+      <div class="cmd-actions">
+        <button type="button" class="cmd-cancel" (click)="zoneOpen.set(false)">Cancelar</button>
+        <button type="submit" class="cmd-submit" [disabled]="!zName().trim()">Guardar</button>
+      </div>
+    </form>
+  </app-modal>
+}
+
+@if (driverOpen()) {
+  <app-modal [title]="dId() ? 'Editar repartidor' : 'Nuevo repartidor'" (close)="driverOpen.set(false)">
+    <form (ngSubmit)="submitDriver()">
+      <label class="cmd-field"><span>Nombre</span>
+        <input class="cmd-input" name="n" [ngModel]="dName()" (ngModelChange)="dName.set($event)" placeholder="Ej. Mario Hernández" required /></label>
+      <label class="cmd-field"><span>Teléfono</span>
+        <input class="cmd-input" name="p" [ngModel]="dPhone()" (ngModelChange)="dPhone.set($event)" placeholder="7000-0000" inputmode="tel" /></label>
+      <label class="cmd-field" style="flex-direction:row;align-items:center;gap:10px;cursor:pointer;">
+        <input type="checkbox" name="a" [ngModel]="dActive()" (ngModelChange)="dActive.set($event)" style="width:16px;height:16px;cursor:pointer;" />
+        <span style="margin:0;">Disponible</span></label>
+      <div class="cmd-actions">
+        <button type="button" class="cmd-cancel" (click)="driverOpen.set(false)">Cancelar</button>
+        <button type="submit" class="cmd-submit" [disabled]="!dName().trim()">Guardar</button>
+      </div>
+    </form>
+  </app-modal>
+}
+
+@if (editOpen()) {
+  <app-modal title="Editar usuario" (close)="editOpen.set(false)">
+    <form (ngSubmit)="submitEdit()">
+      <label class="cmd-field"><span>Nombre</span>
+        <input class="cmd-input" name="n" [ngModel]="euName()" (ngModelChange)="euName.set($event)" required /></label>
+      <div class="cmd-row">
+        <label class="cmd-field"><span>Rol</span>
+          <select class="cmd-select" name="r" [ngModel]="euRole()" (ngModelChange)="euRole.set($event)">
+            @for (r of roles; track r) { <option [value]="r">{{ r }}</option> }
+          </select></label>
+        <label class="cmd-field"><span>Sucursal</span>
+          <select class="cmd-select" name="b" [ngModel]="euBranchId()" (ngModelChange)="euBranchId.set($event)">
+            <option value="">Todas las sucursales</option>
+            @for (b of branchOptions(); track b.id) { <option [value]="b.id">{{ b.name }}</option> }
+          </select></label>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-top:4px;">
+        <div>
+          <div style="font-size:13px;font-weight:700;">Estado de la cuenta</div>
+          <div style="font-size:11.5px;color:var(--text-3);">{{ euActive() ? 'El usuario puede iniciar sesión' : 'Acceso deshabilitado' }}</div>
+        </div>
+        <button type="button" (click)="toggleEditActive()" [style]="'width:38px;height:22px;border-radius:20px;border:none;cursor:pointer;position:relative;flex-shrink:0;background:' + (euActive() ? 'var(--primary)' : 'var(--border-strong)')">
+          <span [style]="'position:absolute;top:2px;left:' + (euActive() ? '18px' : '2px') + ';width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.3);'"></span>
+        </button>
+      </div>
+      <div class="cmd-actions">
+        <button type="button" class="cmd-cancel" (click)="editOpen.set(false)">Cerrar</button>
+        <button type="submit" class="cmd-submit" [disabled]="!euName().trim()">Guardar cambios</button>
+      </div>
+    </form>
+  </app-modal>
+}
+
+@if (printerOpen()) {
+  <app-modal title="Agregar impresora" (close)="printerOpen.set(false)">
+    <form (ngSubmit)="submitPrinter()">
+      <label class="cmd-field"><span>Nombre</span>
+        <input class="cmd-input" name="n" [ngModel]="prName()" (ngModelChange)="prName.set($event)" placeholder="Ej. Cocina 2" required /></label>
+      <div class="cmd-row">
+        <label class="cmd-field"><span>Modelo</span>
+          <input class="cmd-input" name="m" [ngModel]="prModel()" (ngModelChange)="prModel.set($event)" placeholder="Térmica 80mm" /></label>
+        <label class="cmd-field"><span>Conexión</span>
+          <select class="cmd-select" name="cn" [ngModel]="prConn()" (ngModelChange)="prConn.set($event)">
+            @for (c of connOptions; track c) { <option [value]="c">{{ c }}</option> }
+          </select></label>
+      </div>
+      <label class="cmd-field"><span>Uso</span>
+        <input class="cmd-input" name="u" [ngModel]="prUse()" (ngModelChange)="prUse.set($event)" placeholder="Ej. Comandas de cocina" /></label>
+      <div class="cmd-actions">
+        <button type="button" class="cmd-cancel" (click)="printerOpen.set(false)">Cancelar</button>
+        <button type="submit" class="cmd-submit" [disabled]="!prName().trim()">Agregar</button>
+      </div>
+    </form>
+  </app-modal>
+}
+
+@if (testMsg()) {
+  <div style="position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:90;background:var(--text);color:var(--surface);font-size:13px;font-weight:600;padding:11px 18px;border-radius:10px;box-shadow:var(--shadow-lg);max-width:90vw;">{{ testMsg() }}</div>
+}

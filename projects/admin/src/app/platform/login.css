@@ -1,0 +1,72 @@
+:host { display: block; }
+
+.login-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(16, 185, 129, 0.12), transparent 60%),
+    var(--bg);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-lg);
+  padding: 32px 30px;
+}
+
+.brand { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
+.logo {
+  width: 40px; height: 40px; border-radius: 11px;
+  background: linear-gradient(140deg, #10b981, #059669);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+.brand-name { font-weight: 800; font-size: 18px; letter-spacing: -0.3px; line-height: 1; }
+.brand-sub { font-size: 11.5px; color: var(--text-3); margin-top: 3px; font-weight: 500; }
+
+.title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; margin: 0; }
+.subtitle { font-size: 13px; color: var(--text-2); margin: 6px 0 22px; }
+
+.field { display: block; margin-bottom: 14px; }
+.field span { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
+.field input,
+.field select {
+  width: 100%; height: 42px; border: 1px solid var(--border);
+  background: var(--surface-2); border-radius: 10px; padding: 0 13px;
+  font-size: 14px; color: var(--text); outline: none; font-family: inherit;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.field input:focus,
+.field select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+
+/* Select con flecha propia (oculta la nativa, que se ve fea) */
+.field select {
+  -webkit-appearance: none; -moz-appearance: none; appearance: none;
+  padding-right: 38px; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 13px center;
+}
+.field select:invalid { color: var(--text-3); }
+
+.error {
+  font-size: 12.5px; font-weight: 600; color: var(--red);
+  background: var(--red-soft); border-radius: 9px; padding: 9px 12px; margin-bottom: 14px;
+}
+
+.submit {
+  width: 100%; height: 46px; border: none; border-radius: 11px;
+  background: linear-gradient(140deg, #10b981, #059669); color: #fff;
+  font-weight: 700; font-size: 14.5px; cursor: pointer; font-family: inherit;
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.32); transition: filter 0.12s;
+}
+.submit:hover:not(:disabled) { filter: brightness(1.05); }
+.submit:disabled { opacity: 0.7; cursor: default; }
+
+.hint { font-size: 11.5px; color: var(--text-3); text-align: center; margin-top: 18px; }
