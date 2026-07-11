@@ -1,0 +1,301 @@
+<div class="pf-shell">
+  <!-- Sidebar -->
+  <aside class="pf-side">
+    <div class="pf-logo">
+      <div class="pf-logo-mark">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18M9 21V9"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+      </div>
+      <div>
+        <div class="pf-logo-name">Comanda</div>
+        <div class="pf-logo-sub">Plataforma</div>
+      </div>
+    </div>
+
+    <nav class="pf-nav">
+      <div class="pf-nav-item" [class.active]="view() === 'resumen'" (click)="setView('resumen')"><span class="pf-nav-ico">📊</span> Resumen</div>
+      <div class="pf-nav-item" [class.active]="view() === 'planes'" (click)="setView('planes')"><span class="pf-nav-ico">🎟️</span> Planes</div>
+      <div class="pf-nav-item" [class.active]="view() === 'metodos'" (click)="setView('metodos')"><span class="pf-nav-ico">💳</span> Métodos de pago</div>
+      <div class="pf-nav-item" [class.active]="view() === 'ajustes'" (click)="setView('ajustes')"><span class="pf-nav-ico">⚙️</span> Ajustes</div>
+    </nav>
+
+    <div class="pf-side-foot">
+      <div class="pf-admin">
+        <div class="pf-admin-av">{{ adminInitials }}</div>
+        <div class="pf-admin-info">
+          <div class="pf-admin-name">{{ adminName }}</div>
+          <div class="pf-admin-role">Operador</div>
+        </div>
+      </div>
+      <button class="pf-logout" (click)="logout()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="pf-main">
+    <header class="pf-header">
+      @switch (view()) {
+        @case ('planes') { <div><h1>Planes y precios</h1><p>Crea, edita y configura los límites y funciones de cada plan</p></div> }
+        @case ('metodos') { <div><h1>Métodos de pago por país</h1><p>Define qué métodos existen en cada país; cada restaurante activa los suyos</p></div> }
+        @case ('ajustes') { <div><h1>Ajustes de plataforma</h1><p>Credenciales con las que se cobran las suscripciones</p></div> }
+        @default { <div><h1>Resumen de la plataforma</h1><p>Métricas y suscripciones de todos los restaurantes</p></div> }
+      }
+    </header>
+
+    <div class="pf-body">
+
+      <!-- ============ RESUMEN ============ -->
+      @if (view() === 'resumen') {
+        @if (metrics(); as m) {
+          <div class="pf-metrics">
+            <div class="pf-card">
+              <div class="pf-ico" style="background:var(--violet-soft,#ede9fe);">🏪</div>
+              <div><div class="pf-num">{{ m.totalTenants }}</div><div class="pf-lbl">Restaurantes</div></div>
+            </div>
+            <div class="pf-card">
+              <div class="pf-ico" style="background:var(--primary-soft);">✅</div>
+              <div><div class="pf-num">{{ m.activeTenants }}</div><div class="pf-lbl">Activos</div></div>
+            </div>
+            <div class="pf-card">
+              <div class="pf-ico" style="background:var(--blue-soft,#dbeafe);">🆕</div>
+              <div><div class="pf-num">{{ m.trialTenants }}</div><div class="pf-lbl">En prueba</div></div>
+            </div>
+            <div class="pf-card">
+              <div class="pf-ico" style="background:var(--red-soft,#fee2e2);">⏸️</div>
+              <div><div class="pf-num">{{ m.suspendedTenants }}</div><div class="pf-lbl">Suspendidos</div></div>
+            </div>
+            <div class="pf-card pf-card-hi">
+              <div class="pf-ico" style="background:rgba(255,255,255,.25);">💰</div>
+              <div><div class="pf-num">{{ money(m.mrr) }}</div><div class="pf-lbl">MRR mensual</div></div>
+            </div>
+            <div class="pf-card">
+              <div class="pf-ico" style="background:var(--amber-soft,#fef3c7);">🧾</div>
+              <div><div class="pf-num">{{ m.totalOrders }}</div><div class="pf-lbl">Pedidos totales</div></div>
+            </div>
+          </div>
+        }
+
+        <section class="pf-panel">
+          <div class="pf-panel-hd">
+            <div>
+              <h2>Restaurantes</h2>
+              <p>Asigna plan, revisa actividad y administra la suscripción.</p>
+            </div>
+            <span class="pf-count">{{ tenants().length }}</span>
+          </div>
+
+          <div class="pf-table-wrap">
+            <table class="pf-table">
+              <thead>
+                <tr>
+                  <th>Restaurante</th><th>Plan</th><th>Estado</th>
+                  <th class="r">Sucursales</th><th class="r">Productos</th><th class="r">Pedidos</th><th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (t of tenants(); track t.id) {
+                  <tr>
+                    <td>
+                      <div class="pf-rest">
+                        <div class="pf-rest-av" [style.background]="avatar(t.name)">{{ initials(t.name) }}</div>
+                        <div>
+                          <div class="pf-rest-name">{{ t.name }}</div>
+                          <div class="pf-rest-slug">/tienda/{{ t.slug }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <select class="pf-select" [value]="t.planId ?? ''" (change)="changePlan(t, $any($event.target).value)">
+                        <option value="" disabled>Sin plan</option>
+                        @for (p of plans(); track p.id) {
+                          <option [value]="p.id">{{ p.name }} · {{ money(p.priceMonthly) }}/mes</option>
+                        }
+                      </select>
+                    </td>
+                    <td><span class="pf-pill" [style.color]="statusColor(t.subscriptionStatus)" [style.background]="statusColor(t.subscriptionStatus) + '1f'">● {{ statusLabel(t.subscriptionStatus) }}</span></td>
+                    <td class="r pf-muted">{{ t.branches }}</td>
+                    <td class="r pf-muted">{{ t.products }}</td>
+                    <td class="r"><b>{{ t.orders }}</b></td>
+                    <td class="r">
+                      @if (t.subscriptionStatus === 'Suspended') {
+                        <button class="pf-btn ok" (click)="setStatus(t, 'Active')">Activar</button>
+                      } @else {
+                        <button class="pf-btn danger" (click)="setStatus(t, 'Suspended')">Suspender</button>
+                      }
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="7" class="pf-empty">Aún no hay restaurantes registrados.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+
+      <!-- ============ PLANES ============ -->
+      @if (view() === 'planes') {
+        <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+          <button class="pf-btn ok" style="height:38px;padding:0 18px;font-size:13.5px;" (click)="newPlan()">+ Nuevo plan</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
+          @for (p of plans(); track p.id) {
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow-sm);" [style.opacity]="p.isActive ? 1 : .55">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+                <div>
+                  <div style="font-size:17px;font-weight:800;letter-spacing:-.3px;">{{ p.name }}</div>
+                  <div style="font-size:13px;color:var(--text-2);margin-top:2px;">{{ p.priceMonthly > 0 ? money(p.priceMonthly) + ' / mes' : 'Gratis' }}</div>
+                </div>
+                @if (!p.isActive) { <span class="pf-pill" style="color:var(--text-3);background:var(--surface-hover);">Inactivo</span> }
+              </div>
+              <div style="margin-top:14px;display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--text-2);">
+                <div>🧾 {{ lim(p.maxOrdersMonth) }} pedidos/mes @if (p.overagePrice > 0) { <span style="color:var(--text-3);">· overage {{ money(p.overagePrice) }}</span> }</div>
+                <div>🏪 {{ lim(p.maxBranches) }} sucursales · 👤 {{ lim(p.maxUsers) }} usuarios · 🍽️ {{ lim(p.maxProducts) }} productos</div>
+                <div>🗄️ Retención {{ p.retentionMonths > 0 ? p.retentionMonths + ' meses' : 'sin límite' }}</div>
+              </div>
+              <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;">
+                @if (p.onlinePayments) { <span class="pf-feat">Pagos en línea</span> }
+                @if (p.coupons) { <span class="pf-feat">Cupones</span> }
+                @if (p.loyalty) { <span class="pf-feat">Fidelización</span> }
+                @if (p.advancedReports) { <span class="pf-feat">Reportes+</span> }
+                @if (p.inventory) { <span class="pf-feat">Inventario</span> }
+              </div>
+              <div style="margin-top:16px;display:flex;gap:8px;">
+                <button class="pf-btn" (click)="editPlan(p)">Editar</button>
+                <button class="pf-btn danger" (click)="deletePlan(p)">Eliminar</button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ============ MÉTODOS DE PAGO POR PAÍS ============ -->
+      @if (view() === 'metodos') {
+        <div style="display:flex;flex-direction:column;gap:22px;">
+          @for (c of countries; track c.code) {
+            <section>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <div style="font-size:15px;font-weight:800;">{{ c.flag }} {{ c.name }}</div>
+                <button class="pf-btn ok" (click)="newMethod(c.code)">+ Agregar método</button>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;">
+                @for (m of methodsByCountry(c.code); track m.id) {
+                  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:var(--shadow-sm);" [style.opacity]="m.isActive ? 1 : .5">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <span style="font-size:20px;">{{ m.emoji }}</span>
+                      <div style="flex:1;">
+                        <div style="font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:6px;">{{ m.label }}
+                          @if (m.isOnline) { <span style="font-size:9.5px;font-weight:800;color:#2563eb;background:#dbeafe;padding:1px 6px;border-radius:20px;">EN LÍNEA</span> }
+                        </div>
+                        <div style="font-size:11px;color:var(--text-3);">{{ m.key }}</div>
+                      </div>
+                    </div>
+                    @if (m.description) { <div style="font-size:11.5px;color:var(--text-2);margin-top:8px;">{{ m.description }}</div> }
+                    <div style="margin-top:10px;display:flex;gap:6px;">
+                      <button class="pf-btn" (click)="editMethod(m)">Editar</button>
+                      <button class="pf-btn danger" (click)="deleteMethod(m)">Eliminar</button>
+                    </div>
+                  </div>
+                } @empty {
+                  <div style="font-size:12.5px;color:var(--text-3);padding:6px;">Sin métodos para este país.</div>
+                }
+              </div>
+            </section>
+          }
+        </div>
+      }
+
+      <!-- ============ AJUSTES (Wompi de plataforma) ============ -->
+      @if (view() === 'ajustes') {
+        <section class="pf-panel" style="max-width:560px;">
+          <div class="pf-panel-hd">
+            <div>
+              <h2>Wompi de cobros (suscripciones)</h2>
+              <p>Cuenta Wompi de Innovacors con la que se cobran los planes a los restaurantes.</p>
+            </div>
+            <span class="pf-pill" [style.color]="wompiConnected() ? 'var(--primary)' : 'var(--text-3)'" [style.background]="(wompiConnected() ? 'var(--primary)' : 'var(--text-3)') + '1f'">● {{ wompiConnected() ? 'Conectado' : 'Sin conectar' }}</span>
+          </div>
+          <div style="padding:18px;display:flex;flex-direction:column;gap:12px;">
+            <label style="font-size:12.5px;font-weight:600;color:var(--text-2);">App ID
+              <input class="pf-input" [ngModel]="wompiAppId()" (ngModelChange)="wompiAppId.set($event)" placeholder="App ID de Wompi" />
+            </label>
+            <label style="font-size:12.5px;font-weight:600;color:var(--text-2);">API Secret
+              <input class="pf-input" type="password" [ngModel]="wompiSecret()" (ngModelChange)="wompiSecret.set($event)" [placeholder]="wompiConnected() ? '•••••••• (escribe para reemplazar)' : 'API Secret de Wompi'" />
+            </label>
+            <div style="font-size:11.5px;color:var(--text-3);">Para desconectar, vacía el App ID y guarda. El secret se almacena cifrado.</div>
+            @if (wompiMsg()) { <div style="font-size:12.5px;font-weight:600;color:var(--primary-text);">{{ wompiMsg() }}</div> }
+            <div><button class="pf-btn ok" style="height:40px;padding:0 20px;" [disabled]="wompiSaving()" (click)="saveWompi()">{{ wompiSaving() ? 'Guardando…' : 'Guardar credenciales' }}</button></div>
+          </div>
+        </section>
+      }
+    </div>
+  </main>
+
+  <!-- ============ MODAL EDITOR DE PLAN ============ -->
+  @if (editing(); as e) {
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px;" (click)="closeEditor()">
+      <div style="background:var(--surface);border-radius:18px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg,0 20px 60px rgba(0,0,0,.3));" (click)="$event.stopPropagation()">
+        <div style="padding:20px 22px;border-bottom:1px solid var(--border);font-size:17px;font-weight:800;">{{ e.id ? 'Editar plan' : 'Nuevo plan' }}</div>
+        <div style="padding:20px 22px;display:flex;flex-direction:column;gap:14px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <label class="pf-fl">Nombre<input class="pf-input" [ngModel]="e.name" (ngModelChange)="e.name = $event" /></label>
+            <label class="pf-fl">Precio mensual (US$)<input class="pf-input" type="number" min="0" step="0.01" [ngModel]="e.priceMonthly" (ngModelChange)="e.priceMonthly = +$event" /></label>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.4px;margin-top:4px;">Límites (0 = ilimitado)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <label class="pf-fl">Pedidos / mes<input class="pf-input" type="number" min="0" [ngModel]="e.maxOrdersMonth" (ngModelChange)="e.maxOrdersMonth = +$event" /></label>
+            <label class="pf-fl">Overage por pedido (US$)<input class="pf-input" type="number" min="0" step="0.01" [ngModel]="e.overagePrice" (ngModelChange)="e.overagePrice = +$event" /></label>
+            <label class="pf-fl">Sucursales<input class="pf-input" type="number" min="0" [ngModel]="e.maxBranches" (ngModelChange)="e.maxBranches = +$event" /></label>
+            <label class="pf-fl">Usuarios<input class="pf-input" type="number" min="0" [ngModel]="e.maxUsers" (ngModelChange)="e.maxUsers = +$event" /></label>
+            <label class="pf-fl">Productos<input class="pf-input" type="number" min="0" [ngModel]="e.maxProducts" (ngModelChange)="e.maxProducts = +$event" /></label>
+            <label class="pf-fl">Retención (meses, 0 = sin límite)<input class="pf-input" type="number" min="0" [ngModel]="e.retentionMonths" (ngModelChange)="e.retentionMonths = +$event" /></label>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.4px;margin-top:4px;">Funciones incluidas</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <label class="pf-ck"><input type="checkbox" [ngModel]="e.onlinePayments" (ngModelChange)="e.onlinePayments = $event" /> Pagos en línea</label>
+            <label class="pf-ck"><input type="checkbox" [ngModel]="e.coupons" (ngModelChange)="e.coupons = $event" /> Cupones</label>
+            <label class="pf-ck"><input type="checkbox" [ngModel]="e.loyalty" (ngModelChange)="e.loyalty = $event" /> Fidelización</label>
+            <label class="pf-ck"><input type="checkbox" [ngModel]="e.advancedReports" (ngModelChange)="e.advancedReports = $event" /> Reportes avanzados</label>
+            <label class="pf-ck"><input type="checkbox" [ngModel]="e.inventory" (ngModelChange)="e.inventory = $event" /> Inventario</label>
+            <label class="pf-ck"><input type="checkbox" [ngModel]="e.isActive" (ngModelChange)="e.isActive = $event" /> Activo (se ofrece)</label>
+          </div>
+        </div>
+        <div style="padding:16px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;">
+          <button class="pf-btn" (click)="closeEditor()">Cancelar</button>
+          <button class="pf-btn ok" style="padding:0 20px;" [disabled]="saving() || !e.name" (click)="savePlan()">{{ saving() ? 'Guardando…' : 'Guardar plan' }}</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ============ MODAL EDITOR DE MÉTODO DE PAGO ============ -->
+  @if (editingMethod(); as m) {
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px;" (click)="closeMethod()">
+      <div style="background:var(--surface);border-radius:18px;width:100%;max-width:460px;box-shadow:var(--shadow-lg,0 20px 60px rgba(0,0,0,.3));" (click)="$event.stopPropagation()">
+        <div style="padding:20px 22px;border-bottom:1px solid var(--border);font-size:17px;font-weight:800;">{{ m.id ? 'Editar método' : 'Nuevo método' }} · {{ countryName(m.country) }}</div>
+        <div style="padding:20px 22px;display:flex;flex-direction:column;gap:14px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <label class="pf-fl">Nombre<input class="pf-input" [ngModel]="m.label" (ngModelChange)="m.label = $event" /></label>
+            <label class="pf-fl">Clave (key)<input class="pf-input" [ngModel]="m.key" (ngModelChange)="m.key = $event" placeholder="pay-xxxx" [disabled]="!!m.id" /></label>
+          </div>
+          <label class="pf-fl">Descripción<input class="pf-input" [ngModel]="m.description" (ngModelChange)="m.description = $event" /></label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <label class="pf-fl">Emoji<input class="pf-input" [ngModel]="m.emoji" (ngModelChange)="m.emoji = $event" /></label>
+            <label class="pf-fl">Orden<input class="pf-input" type="number" [ngModel]="m.sortOrder" (ngModelChange)="m.sortOrder = +$event" /></label>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <label class="pf-ck"><input type="checkbox" [ngModel]="m.isOnline" (ngModelChange)="m.isOnline = $event" /> Pago en línea (Wompi)</label>
+            <label class="pf-ck"><input type="checkbox" [ngModel]="m.defaultEnabled" (ngModelChange)="m.defaultEnabled = $event" /> Activo por defecto</label>
+            <label class="pf-ck"><input type="checkbox" [ngModel]="m.isActive" (ngModelChange)="m.isActive = $event" /> Se ofrece</label>
+          </div>
+        </div>
+        <div style="padding:16px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;">
+          <button class="pf-btn" (click)="closeMethod()">Cancelar</button>
+          <button class="pf-btn ok" style="padding:0 20px;" [disabled]="savingMethod() || !m.key || !m.label" (click)="saveMethod()">{{ savingMethod() ? 'Guardando…' : 'Guardar' }}</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

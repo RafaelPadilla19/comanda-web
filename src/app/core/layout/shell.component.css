@@ -1,0 +1,40 @@
+:host { display: block; }
+
+.nav-btn:hover { background: var(--surface-hover) !important; }
+.user-row:hover { background: var(--surface-hover); }
+
+.search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.hbtn:hover { background: var(--surface-hover); }
+.icon-btn:hover { color: var(--text); }
+.cta:hover { filter: brightness(1.05); }
+
+/* Hamburguesa solo en móvil/tablet */
+.hamburger { display: none; }
+
+@media (max-width: 1024px) {
+  .hamburger { display: flex; }
+
+  .sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    height: 100vh !important;
+    z-index: 60;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  .scrim {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 55;
+    animation: pop-in 0.15s ease;
+  }
+}

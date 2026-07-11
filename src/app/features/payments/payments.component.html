@@ -1,0 +1,101 @@
+<div style="padding:26px;max-width:820px;margin:0 auto;">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+    <div>
+      <div style="font-size:20px;font-weight:800;letter-spacing:-.4px;">Métodos de pago</div>
+      <div style="font-size:13px;color:var(--text-3);margin-top:2px;">Define cómo te pagan tus clientes. Lo disponible depende de tu país.</div>
+    </div>
+    <span style="font-size:12px;font-weight:700;color:var(--primary-text);background:var(--primary-soft);padding:6px 14px;border-radius:20px;align-self:center;">{{ enabledCount() }} activos</span>
+  </div>
+
+  <!-- País -->
+  <div style="margin-top:20px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow-sm);">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:22px;">{{ countryFlag() }}</span>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:800;">País del restaurante</div>
+        <div style="font-size:12px;color:var(--text-3);margin-top:1px;">El pago en línea solo está integrado en El Salvador por ahora.</div>
+      </div>
+      @if (countrySaved()) { <span style="font-size:11px;font-weight:700;color:var(--primary-text);background:var(--primary-soft);padding:3px 10px;border-radius:20px;">✓ Actualizado</span> }
+    </div>
+    <select class="cmd-select" name="country" [ngModel]="country()" (ngModelChange)="changeCountry($event)"
+            style="margin-top:12px;max-width:320px;">
+      <option value="" disabled>Selecciona tu país</option>
+      @for (c of countries; track c.code) { <option [value]="c.code">{{ c.flag }} {{ c.name }}</option> }
+    </select>
+  </div>
+
+  <!-- Pago en línea: el país lo ofrece pero el plan no lo incluye -->
+  @if (hasOnlineMethod() && !canOnline()) {
+    <div style="margin-top:18px;background:var(--surface);border:1px dashed var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow-sm);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:20px;">🔒</span>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:800;">Pago en línea (Wompi)</div>
+          <div style="font-size:12.5px;color:var(--text-2);margin-top:2px;">Tu plan <b>{{ planName() }}</b> no incluye cobros en línea. Mejora tu plan para recibir pagos por la tienda.</div>
+        </div>
+        <a routerLink="/suscripcion" style="font-size:12.5px;font-weight:700;color:var(--primary-text);background:var(--primary-soft);padding:8px 14px;border-radius:10px;text-decoration:none;white-space:nowrap;">Mejorar plan</a>
+      </div>
+    </div>
+  }
+
+  <!-- Pago en línea (Wompi) — país con integración + plan que lo incluye -->
+  @if (hasOnlineMethod() && canOnline()) {
+    <div style="margin-top:18px;background:linear-gradient(140deg,var(--blue-soft,#dbeafe),transparent);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow-sm);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+        <span style="font-size:20px;">🌐</span>
+        <div style="font-size:14px;font-weight:800;flex:1;">Pago en línea (Wompi)</div>
+        @if (wConnected()) {
+          <span style="font-size:11px;font-weight:700;color:var(--primary-text);background:var(--primary-soft);padding:3px 10px;border-radius:20px;">🟢 Conectado</span>
+        } @else {
+          <span style="font-size:11px;font-weight:700;color:var(--text-3);background:var(--surface);padding:3px 10px;border-radius:20px;border:1px solid var(--border);">No conectado</span>
+        }
+      </div>
+      <div style="font-size:12.5px;color:var(--text-2);margin-bottom:14px;">Conecta tu propia cuenta Wompi: el cobro cae a <b>tu</b> cuenta y se muestra el nombre de tu negocio en el checkout. Tus llaves se guardan cifradas.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <label class="cmd-field"><span>App ID (Wompi)</span>
+          <input class="cmd-input" name="wai" [ngModel]="wAppId()" (ngModelChange)="wAppId.set($event)" placeholder="00000000-0000-0000-0000-000000000000" /></label>
+        <label class="cmd-field"><span>API Secret @if (wConnected()) { <small style="color:var(--text-3);">(vacío = conservar)</small> }</span>
+          <input class="cmd-input" type="password" name="was" [ngModel]="wSecret()" (ngModelChange)="wSecret.set($event)" placeholder="••••••••" autocomplete="new-password" /></label>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+        <button class="cmd-submit" (click)="saveWompi()" style="height:38px;">Guardar conexión</button>
+        @if (wSaved()) { <span style="font-size:12.5px;color:var(--primary-text);font-weight:700;">✓ Guardado</span> }
+      </div>
+    </div>
+
+    <!-- Métodos en línea -->
+    <div style="margin-top:22px;font-size:13px;font-weight:800;color:var(--text-2);text-transform:uppercase;letter-spacing:.4px;">En línea</div>
+    <div style="margin-top:10px;display:flex;flex-direction:column;gap:10px;">
+      @for (p of onlineMethods(); track p.key) {
+        <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;box-shadow:var(--shadow-sm);">
+          <div style="width:42px;height:42px;border-radius:11px;background:var(--blue-soft,#dbeafe);display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;">{{ p.emoji }}</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px;">{{ p.label }}
+              <span style="font-size:10px;font-weight:800;color:#2563eb;background:#dbeafe;padding:1px 7px;border-radius:20px;">EN LÍNEA</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-3);margin-top:2px;">{{ p.desc }}</div>
+            @if (!wConnected() && !p.isEnabled) { <div style="font-size:11px;color:#d97706;margin-top:3px;">Conecta Wompi arriba para activarlo.</div> }
+          </div>
+          <button (click)="togglePayment(p.key)" aria-label="Activar" [style]="p.switchStyle"><span [style]="p.knobStyle"></span></button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Métodos manuales -->
+  <div style="margin-top:22px;font-size:13px;font-weight:800;color:var(--text-2);text-transform:uppercase;letter-spacing:.4px;">Manuales · {{ countryName() }}</div>
+  <div style="margin-top:10px;display:flex;flex-direction:column;gap:10px;">
+    @for (p of manualMethods(); track p.key) {
+      <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;box-shadow:var(--shadow-sm);">
+        <div style="width:42px;height:42px;border-radius:11px;background:var(--surface-hover);display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;">{{ p.emoji }}</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;">{{ p.label }}</div>
+          <div style="font-size:12px;color:var(--text-3);margin-top:2px;">{{ p.desc }}</div>
+        </div>
+        <button (click)="togglePayment(p.key)" aria-label="Activar" [style]="p.switchStyle"><span [style]="p.knobStyle"></span></button>
+      </div>
+    } @empty {
+      <div style="padding:22px;text-align:center;color:var(--text-3);font-size:12.5px;background:var(--surface);border:1px solid var(--border);border-radius:14px;">Selecciona tu país para ver los métodos disponibles.</div>
+    }
+  </div>
+</div>

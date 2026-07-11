@@ -1,0 +1,298 @@
+@if (loading()) {
+  <div class="sf-center">
+    <div class="sf-spinner"></div>
+    <p>Cargando menú…</p>
+  </div>
+} @else if (loadError(); as err) {
+  <div class="sf-center">
+    <div class="sf-emoji-lg">🍽️</div>
+    <h2>Ups…</h2>
+    <p>{{ err }}</p>
+  </div>
+} @else if (menu(); as m) {
+  <div class="sf-wrap">
+    <!-- Encabezado de la sucursal -->
+    <header class="sf-hero">
+      <div class="sf-hero-badge">🍽️</div>
+      <div>
+        <h1>{{ m.branchName }}</h1>
+        <p class="sf-hero-sub">{{ m.branchAddress }}</p>
+        <p class="sf-hero-hours">🕒 {{ m.branchHours }}</p>
+      </div>
+    </header>
+
+    <!-- Selector de canal -->
+    <div class="sf-channels">
+      @for (c of channels; track c.value) {
+        <button type="button" class="sf-chan" [class.active]="channel() === c.value" (click)="setChannel(c.value)">
+          <span class="sf-chan-emoji">{{ c.emoji }}</span>
+          <span>{{ c.label }}</span>
+        </button>
+      }
+    </div>
+
+    <!-- Buscador -->
+    <div class="sf-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="search" [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="Buscar en el menú…" />
+      @if (search()) {
+        <button type="button" class="sf-search-clear" (click)="search.set('')" aria-label="Limpiar">✕</button>
+      }
+    </div>
+
+    <!-- Tabs de categoría (ocultas durante la búsqueda) -->
+    @if (!search()) {
+      <nav class="sf-cats">
+        <button type="button" class="sf-cat" [class.active]="activeCat() === 'all'" (click)="setCat('all')">Todo</button>
+        @for (c of m.categories; track c.id) {
+          <button type="button" class="sf-cat" [class.active]="activeCat() === c.id" (click)="setCat(c.id)">{{ c.name }}</button>
+        }
+      </nav>
+    }
+
+    <!-- Productos por sección -->
+    <main class="sf-menu">
+      @for (sec of sections(); track sec.id) {
+        <section class="sf-section">
+          <h2 class="sf-section-title">{{ sec.name }}</h2>
+          @for (p of sec.products; track p.id) {
+            <article class="sf-prod">
+              <div class="sf-prod-emoji" [style.background]="p.tint">{{ p.emoji }}</div>
+              <div class="sf-prod-body">
+                <h3>{{ p.name }}</h3>
+                @if (p.description) { <p class="sf-prod-desc">{{ p.description }}</p> }
+                <span class="sf-prod-price">{{ money(p.price) }}</span>
+              </div>
+              <div class="sf-prod-action">
+                @if (!hasMods(p) && qtyOf(p.id) > 0) {
+                  <div class="sf-stepper">
+                    <button type="button" (click)="dec(p)" aria-label="Quitar uno">−</button>
+                    <span>{{ qtyOf(p.id) }}</span>
+                    <button type="button" (click)="add(p)" aria-label="Agregar uno">+</button>
+                  </div>
+                } @else {
+                  <button type="button" class="sf-add" (click)="onAdd(p)">{{ hasMods(p) ? 'Elegir' : 'Agregar' }}</button>
+                }
+              </div>
+            </article>
+          }
+        </section>
+      } @empty {
+        <p class="sf-empty">{{ search() ? 'Sin resultados para “' + search() + '”.' : 'No hay productos en esta categoría.' }}</p>
+      }
+      <div class="sf-foot">Precios en US$ · IVA 13% incluido</div>
+    </main>
+
+    <!-- Barra flotante del carrito -->
+    @if (cartCount() > 0) {
+      <button type="button" class="sf-cartbar" (click)="openCart()">
+        <span class="sf-cartbar-count">{{ cartCount() }}</span>
+        <span class="sf-cartbar-label">Ver pedido</span>
+        <span class="sf-cartbar-total">{{ money(total()) }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- ===== Hoja: modificadores ===== -->
+  @if (modProduct(); as p) {
+    <div class="sf-ov" (click)="closeMods()"></div>
+    <div class="sf-sheet" role="dialog" aria-modal="true">
+      <div class="sf-sheet-grip"></div>
+      <div class="sf-sheet-hd">
+        <h2>{{ p.name }}</h2>
+        <button type="button" class="sf-x" (click)="closeMods()" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="sf-sheet-body">
+        @if (p.variants.length) {
+          <div class="sf-mod-group">
+            <div class="sf-mod-title">Elige una opción</div>
+            @for (v of p.variants; track v.name) {
+              <button type="button" class="sf-mod-opt" [class.active]="modVariant()?.name === v.name" (click)="modVariant.set(v)">
+                <span>{{ v.name }} @if (v.price > 0) { <small style="color:var(--primary-text);font-weight:700;">+{{ money(v.price) }}</small> }</span>
+                <span class="sf-radio" [class.on]="modVariant()?.name === v.name"></span>
+              </button>
+            }
+          </div>
+        }
+        @if (p.extras.length) {
+          <div class="sf-mod-group">
+            <div class="sf-mod-title">Complementos (opcional)</div>
+            @for (ex of p.extras; track ex.name) {
+              <button type="button" class="sf-mod-opt" [class.active]="isExtraOn(ex)" (click)="toggleExtra(ex)">
+                <span>+ {{ ex.name }} @if (ex.price > 0) { <small style="color:var(--primary-text);font-weight:700;">+{{ money(ex.price) }}</small> }</span>
+                <span class="sf-check-box" [class.on]="isExtraOn(ex)">✓</span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+      <div class="sf-sheet-foot">
+        <button type="button" class="sf-cta" (click)="confirmMods()">Agregar · {{ money(modUnitPrice()) }}</button>
+      </div>
+    </div>
+  }
+
+  <!-- ===== Hoja: carrito ===== -->
+  @if (cartOpen()) {
+    <div class="sf-ov" (click)="closeCart()"></div>
+    <div class="sf-sheet" role="dialog" aria-modal="true">
+      <div class="sf-sheet-grip"></div>
+      <div class="sf-sheet-hd">
+        <h2>Tu pedido</h2>
+        <button type="button" class="sf-x" (click)="closeCart()" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="sf-sheet-body">
+        @for (l of cart(); track l.key) {
+          <div class="sf-line">
+            <div class="sf-line-emoji" [style.background]="l.product.tint">{{ l.product.emoji }}</div>
+            <div class="sf-line-body">
+              <h4>{{ l.product.name }}</h4>
+              @if (l.label) { <span class="sf-line-mods">{{ l.label }}</span> }
+              <span>{{ money(l.unitPrice) }}</span>
+            </div>
+            <div class="sf-stepper sm">
+              <button type="button" (click)="decLine(l.key)" aria-label="Quitar uno">−</button>
+              <span>{{ l.qty }}</span>
+              <button type="button" (click)="incLine(l.key)" aria-label="Agregar uno">+</button>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="sf-sheet-foot">
+        <div class="sf-row"><span>Subtotal</span><span>{{ money(subtotal()) }}</span></div>
+        @if (deliveryFee() > 0) {
+          <div class="sf-row"><span>Envío</span><span>{{ money(deliveryFee()) }}</span></div>
+        }
+        @if (discount() > 0) {
+          <div class="sf-row" style="color:var(--primary-text);"><span>Descuento {{ appliedCode() ? '(' + appliedCode() + ')' : '' }}</span><span>− {{ money(discount()) }}</span></div>
+        }
+        <div class="sf-row sf-row-total"><span>Total</span><span>{{ money(total()) }}</span></div>
+        <button type="button" class="sf-cta" (click)="goCheckout()">Continuar</button>
+      </div>
+    </div>
+  }
+
+  <!-- ===== Hoja: checkout ===== -->
+  @if (checkoutOpen()) {
+    <div class="sf-ov" (click)="closeCheckout()"></div>
+    <div class="sf-sheet" role="dialog" aria-modal="true">
+      <div class="sf-sheet-grip"></div>
+      <div class="sf-sheet-hd">
+        <button type="button" class="sf-back" (click)="backToCart()" aria-label="Volver">‹</button>
+        <h2>Tus datos</h2>
+        <button type="button" class="sf-x" (click)="closeCheckout()" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="sf-sheet-body">
+        <div class="sf-pill">{{ channelLabel(channel()) }}</div>
+
+        <label class="sf-field">
+          <span>Nombre *</span>
+          <input type="text" [ngModel]="cName()" (ngModelChange)="cName.set($event)" placeholder="Tu nombre" />
+        </label>
+        <label class="sf-field">
+          <span>Teléfono *</span>
+          <input type="tel" [ngModel]="cPhone()" (ngModelChange)="onPhoneChange($event)" placeholder="7777-8888" />
+        </label>
+        @if (loyalty(); as lo) {
+          @if (lo.points > 0) {
+            <button type="button" class="sf-points" [class.on]="redeemPoints()" (click)="redeemPoints.set(!redeemPoints())">
+              <span>⭐ Tienes <b>{{ lo.points }}</b> puntos@if (lo.redeemableAmount > 0) { · canjea {{ money(lo.redeemableAmount) }} }</span>
+              @if (lo.redeemableAmount > 0) {
+                <span class="sf-check-box" [class.on]="redeemPoints()">✓</span>
+              }
+            </button>
+          }
+        }
+        @if (channel() === 'Delivery') {
+          <label class="sf-field">
+            <span>Dirección de entrega *</span>
+            <input type="text" [ngModel]="cAddress()" (ngModelChange)="cAddress.set($event)" placeholder="Colonia, calle, casa #" />
+          </label>
+          @if (zones().length > 0) {
+            <div class="sf-field">
+              <span>Zona de entrega *</span>
+              <div class="sf-zones">
+                @for (z of zones(); track z.id) {
+                  <button type="button" class="sf-zone" [class.active]="zoneId() === z.id" (click)="setZone(z.id)">
+                    <span>{{ z.name }}</span>
+                    <span class="sf-zone-fee">{{ z.fee > 0 ? money(z.fee) : 'Gratis' }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        }
+        <label class="sf-field">
+          <span>Notas (opcional)</span>
+          <textarea rows="2" [ngModel]="cNotes()" (ngModelChange)="cNotes.set($event)" placeholder="Sin cebolla, bien cocido…"></textarea>
+        </label>
+
+        <div class="sf-field">
+          <span>¿Cómo quieres pagar?</span>
+          <div class="sf-pay">
+            <button type="button" class="sf-pay-opt" [class.active]="!payOnline()" (click)="payOnline.set(false)">
+              <span class="sf-pay-emoji">💵</span><span>Al recibir / en caja</span>
+            </button>
+            <button type="button" class="sf-pay-opt" [class.active]="payOnline()" (click)="payOnline.set(true)">
+              <span class="sf-pay-emoji">💳</span><span>Pagar en línea</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="sf-field">
+          <span>¿Tienes un cupón?</span>
+          @if (appliedCode()) {
+            <div class="sf-coupon-on">
+              <span>🏷️ {{ appliedCode() }} · − {{ money(discount()) }}</span>
+              <button type="button" (click)="removeCoupon()">Quitar</button>
+            </div>
+          } @else {
+            <div class="sf-coupon">
+              <input type="text" [ngModel]="couponInput()" (ngModelChange)="couponInput.set($event)" placeholder="Código de descuento" />
+              <button type="button" (click)="applyCoupon()">Aplicar</button>
+            </div>
+            @if (couponMsg()) { <p class="sf-coupon-msg" [class.err]="!couponOk()">{{ couponMsg() }}</p> }
+          }
+        </div>
+
+        @if (formError(); as fe) { <p class="sf-err">{{ fe }}</p> }
+      </div>
+      <div class="sf-sheet-foot">
+        <div class="sf-row"><span>Subtotal</span><span>{{ money(subtotal()) }}</span></div>
+        @if (deliveryFee() > 0) {
+          <div class="sf-row"><span>Envío</span><span>{{ money(deliveryFee()) }}</span></div>
+        }
+        @if (discount() > 0) {
+          <div class="sf-row" style="color:var(--primary-text);"><span>Descuento {{ appliedCode() ? '(' + appliedCode() + ')' : '' }}</span><span>− {{ money(discount()) }}</span></div>
+        }
+        <div class="sf-row sf-row-total"><span>Total</span><span>{{ money(total()) }}</span></div>
+        <button type="button" class="sf-cta" [disabled]="!canSubmit() || submitting()" (click)="submit()">
+          {{ submitting() ? 'Enviando…' : 'Enviar pedido' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- ===== Confirmación ===== -->
+  @if (placed(); as ord) {
+    <div class="sf-ov"></div>
+    <div class="sf-confirm" role="dialog" aria-modal="true">
+      <div class="sf-check">✓</div>
+      <h2>¡Pedido enviado!</h2>
+      <p class="sf-confirm-code">{{ ord.code }}</p>
+      <p class="sf-confirm-sub">{{ channelLabel(ord.channel) }} · {{ money(ord.total) }}</p>
+      <p class="sf-confirm-note">El restaurante recibió tu pedido y te contactará al <b>{{ ord.customerPhone }}</b>.</p>
+      @if (ord.paymentUrl && !ord.isPaid) {
+        <button type="button" class="sf-cta" (click)="openPayment()">💳 Pagar en línea · {{ money(ord.total) }}</button>
+        <p class="sf-confirm-note" style="margin-top:8px;">Abrimos el pago en otra pestaña. Si no, toca el botón.</p>
+      }
+      @if (hasWhatsapp()) {
+        <button type="button" class="sf-wa" (click)="sendWhatsapp(ord)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.8-2-.9-.3-.1-.5-.2-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.7-.9-2.9-1.6-4-3.6-.3-.5.3-.5.8-1.6.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6 1.9.8 2.7.9 3.6.8.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2"/></svg>
+          Confirmar por WhatsApp
+        </button>
+      }
+      <button type="button" class="sf-cta sf-cta-ghost" (click)="newOrder()">Hacer otro pedido</button>
+    </div>
+  }
+}

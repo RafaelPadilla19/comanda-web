@@ -1,0 +1,142 @@
+<div class="pos-shell" style="display:flex;height:calc(100vh - 64px);">
+  <!-- CATALOG -->
+  <div class="pos-catalog" style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <div style="padding:18px 22px 14px;display:flex;gap:9px;overflow-x:auto;border-bottom:1px solid var(--border);">
+      @for (c of posCats(); track c.value) {
+        <button (click)="store.posCat.set(c.value)" [style]="c.style">{{ c.label }}<span [style]="c.countStyle">{{ c.count }}</span></button>
+      }
+    </div>
+    <div class="pos-scroll" style="flex:1;overflow-y:auto;padding:18px 22px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:14px;">
+        @for (p of posProducts(); track p.id) {
+          <button class="prod-card" (click)="onAdd(p.id)" [style]="p.cardStyle">
+            <div [style]="'height:78px;border-radius:8px;background:' + p.tint + ';display:flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:9px;'">{{ p.emoji }}</div>
+            <div style="font-size:13px;font-weight:600;line-height:1.25;margin-bottom:3px;">{{ p.name }}</div>
+            <div style="font-size:13px;font-weight:700;color:var(--primary-text);">{{ p.priceLabel }}</div>
+            @if (p.hasQty) {
+              <span style="position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(16,185,129,.4);">{{ p.qtyLabel }}</span>
+            }
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- CART -->
+  <div class="pos-cart" style="width:368px;flex-shrink:0;border-left:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;">
+    <div style="padding:18px 20px 14px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-size:15px;font-weight:700;">Pedido actual</div>
+        <button class="clear-btn" (click)="store.clearCart()" style="font-size:12px;color:var(--text-3);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600;">Limpiar</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;">
+        @for (ch of channels(); track ch.id) {
+          <button (click)="store.setChannel(ch.id)" [style]="ch.style">
+            <span style="font-size:17px;line-height:1;">{{ ch.emoji }}</span>{{ ch.label }}
+          </button>
+        }
+      </div>
+      @if (store.orderChannel() === 'mesa') {
+        <div style="display:flex;align-items:center;gap:10px;margin-top:10px;padding:8px 8px 8px 12px;border:1px solid var(--border);background:var(--surface-2);border-radius:10px;">
+          <span style="flex:1;font-size:13px;font-weight:600;color:var(--text-2);">Número de mesa</span>
+          <div style="display:flex;align-items:center;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface);">
+            <button class="hover-surface" (click)="store.bumpTable(-1)" aria-label="Menos" style="width:32px;height:32px;border:none;background:var(--surface-2);color:var(--text-2);cursor:pointer;font-size:18px;line-height:1;font-family:inherit;">−</button>
+            <span style="min-width:38px;text-align:center;font-size:15px;font-weight:800;">{{ store.tableNumber() }}</span>
+            <button class="hover-surface" (click)="store.bumpTable(1)" aria-label="Más" style="width:32px;height:32px;border:none;background:var(--surface-2);color:var(--text-2);cursor:pointer;font-size:18px;line-height:1;font-family:inherit;">+</button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div style="flex:1;overflow-y:auto;padding:8px 14px;">
+      @if (cartItems().length === 0) {
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:40px 20px;color:var(--text-3);">
+          <div style="width:56px;height:56px;border-radius:16px;background:var(--surface-hover);display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.5 3h2l2.7 12.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21.5 7H6"/></svg>
+          </div>
+          <div style="font-size:14px;font-weight:600;color:var(--text-2);">Carrito vacío</div>
+          <div style="font-size:12.5px;margin-top:4px;">Toca un producto para empezar el pedido</div>
+        </div>
+      }
+      @for (c of cartItems(); track c.key) {
+        <div style="display:flex;align-items:center;gap:10px;padding:11px 8px;border-bottom:1px solid var(--border);">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:600;">{{ c.name }}</div>
+            @if (c.modifiers) { <div style="font-size:11px;color:var(--text-3);margin-top:1px;">{{ c.modifiers }}</div> }
+            <div style="font-size:11.5px;color:var(--text-3);margin-top:2px;">{{ c.priceEach }} c/u</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <button class="hover-surface" (click)="store.changeQty(c.key, -1)" style="width:28px;height:28px;border:none;background:var(--surface-2);color:var(--text-2);cursor:pointer;font-size:16px;line-height:1;font-family:inherit;">−</button>
+            <span style="min-width:26px;text-align:center;font-size:13px;font-weight:700;">{{ c.qty }}</span>
+            <button class="hover-surface" (click)="store.changeQty(c.key, 1)" style="width:28px;height:28px;border:none;background:var(--surface-2);color:var(--text-2);cursor:pointer;font-size:16px;line-height:1;font-family:inherit;">+</button>
+          </div>
+          <div style="width:64px;text-align:right;font-size:13px;font-weight:700;">{{ c.lineTotal }}</div>
+          <button class="danger-hover" (click)="store.removeItem(c.key)" aria-label="Quitar" style="width:24px;height:24px;border:none;background:none;color:var(--text-3);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      }
+    </div>
+
+    <div style="border-top:1px solid var(--border);padding:16px 20px;">
+      <div style="display:flex;gap:7px;margin-bottom:14px;">
+        @for (d of discountChips(); track d.value) {
+          <button (click)="store.setDiscount(d.value)" [style]="d.style">{{ d.label }}</button>
+        }
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-2);margin-bottom:7px;">
+        <span>Subtotal</span><span style="font-weight:600;color:var(--text);">{{ subtotalLabel() }}</span>
+      </div>
+      @if (store.discount() > 0) {
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--primary-text);margin-bottom:7px;">
+          <span>Descuento ({{ discountPctLabel() }})</span><span style="font-weight:600;">{{ discountLabel() }}</span>
+        </div>
+      }
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-3);margin-bottom:12px;">
+        <span>IVA incluido ({{ ivaPct }}%)</span><span></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;border-top:1px dashed var(--border);margin-bottom:14px;">
+        <span style="font-size:14px;font-weight:700;">Total</span><span style="font-size:23px;font-weight:800;letter-spacing:-.5px;">{{ totalLabel() }}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+        @for (m of payMethods(); track m.id) {
+          <button (click)="store.setPayment(m.id)" [style]="m.style"><span style="font-size:16px;">{{ m.emoji }}</span>{{ m.label }}</button>
+        }
+      </div>
+      <button class="solid-btn" (click)="checkout()" [disabled]="cartItems().length === 0" style="width:100%;height:48px;border:none;border-radius:12px;background:linear-gradient(140deg,#10B981,#059669);color:#fff;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;box-shadow:0 6px 18px rgba(16,185,129,.35);display:flex;align-items:center;justify-content:center;gap:8px;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        {{ chargeLabel() }}
+      </button>
+    </div>
+  </div>
+</div>
+
+@if (modProduct(); as p) {
+  <app-modal [title]="p.name" (close)="closeMods()">
+    @if (p.variants.length) {
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12.5px;font-weight:700;color:var(--text-2);margin-bottom:9px;">Elige una opción</div>
+        @for (v of p.variants; track v.name) {
+          <button type="button" (click)="modVariant.set(v)"
+            [style]="'width:100%;display:flex;align-items:center;justify-content:space-between;padding:11px 13px;margin-bottom:7px;border-radius:10px;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text);border:1.5px solid ' + (modVariant()?.name === v.name ? 'var(--primary)' : 'var(--border)') + ';background:' + (modVariant()?.name === v.name ? 'var(--primary-soft)' : 'var(--surface-2)') + ';'">
+            <span>{{ v.name }}</span>
+            <span style="color:var(--primary-text);font-weight:700;">{{ v.price > 0 ? '+' + money(v.price) : '' }}</span>
+          </button>
+        }
+      </div>
+    }
+    @if (p.extras.length) {
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12.5px;font-weight:700;color:var(--text-2);margin-bottom:9px;">Complementos</div>
+        @for (ex of p.extras; track ex.name) {
+          <button type="button" (click)="toggleExtra(ex)"
+            [style]="'width:100%;display:flex;align-items:center;justify-content:space-between;padding:11px 13px;margin-bottom:7px;border-radius:10px;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text);border:1.5px solid ' + (isExtraOn(ex) ? 'var(--primary)' : 'var(--border)') + ';background:' + (isExtraOn(ex) ? 'var(--primary-soft)' : 'var(--surface-2)') + ';'">
+            <span>{{ isExtraOn(ex) ? '✓ ' : '' }}{{ ex.name }}</span>
+            <span style="color:var(--primary-text);font-weight:700;">{{ ex.price > 0 ? '+' + money(ex.price) : '' }}</span>
+          </button>
+        }
+      </div>
+    }
+    <button class="cmd-submit" (click)="confirmMods()" style="width:100%;">Agregar · {{ money(modUnitPrice()) }}</button>
+  </app-modal>
+}

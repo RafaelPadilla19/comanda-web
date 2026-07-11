@@ -1,0 +1,96 @@
+<div style="display:flex;flex-direction:column;height:calc(100vh - 64px);">
+  <div style="padding:20px 26px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="font-size:18px;font-weight:800;letter-spacing:-.4px;">Tablero de pedidos</div>
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--red);background:var(--red-soft);padding:4px 11px;border-radius:20px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--red);animation:pulse-dot 1.4s infinite;"></span>EN VIVO
+      </span>
+      <span style="font-size:12.5px;color:var(--text-3);">Actualización en tiempo real</span>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="ghost-btn" style="height:36px;padding:0 14px;border-radius:9px;border:1px solid var(--border);background:var(--surface);font-size:12.5px;font-weight:600;color:var(--text-2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M7 12h10M11 18h2"/></svg>Filtrar
+      </button>
+      <button class="solid-btn" routerLink="/pos" style="height:36px;padding:0 14px;border-radius:9px;border:none;background:var(--primary);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;">+ Pedido</button>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;gap:16px;padding:0 26px 22px;overflow-x:auto;min-height:0;">
+    @for (col of columns(); track col.key) {
+      <div style="flex:1;min-width:264px;display:flex;flex-direction:column;background:var(--surface-2);border:1px solid var(--border);border-radius:14px;min-height:0;">
+        <div style="display:flex;align-items:center;gap:8px;padding:14px 14px 12px;border-bottom:1px solid var(--border);">
+          <span [style]="'width:8px;height:8px;border-radius:50%;background:' + col.dot + ';'"></span>
+          <span style="font-size:13.5px;font-weight:700;flex:1;">{{ col.title }}</span>
+          <span [style]="col.countStyle">{{ col.count }}</span>
+        </div>
+        <div style="flex:1;overflow-y:auto;overflow-x:hidden;padding:12px;display:flex;flex-direction:column;gap:11px;">
+          @for (o of col.orders; track o.id) {
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:13px;box-shadow:var(--shadow-sm);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;">
+                <span style="display:flex;align-items:center;gap:7px;">
+                  <span style="font-size:13.5px;font-weight:800;">{{ o.code }}</span>
+                  @if (o.online) {
+                    <span style="font-size:10px;font-weight:700;color:var(--primary-text);background:var(--primary-soft);padding:2px 7px;border-radius:6px;">🌐 Online</span>
+                  }
+                  @if (o.paid) {
+                    <span style="font-size:10px;font-weight:700;color:#fff;background:#10B981;padding:2px 7px;border-radius:6px;">💳 Pagado</span>
+                  }
+                </span>
+                <span style="font-size:11px;color:var(--text-3);">{{ o.time }}</span>
+              </div>
+              <span [style]="o.tableStyle">{{ o.table }}</span>
+              @if (o.online) {
+                <div style="margin-top:9px;display:flex;flex-direction:column;gap:3px;font-size:11.5px;color:var(--text-2);">
+                  <span>👤 {{ o.customer }} · 📞 {{ o.phone }}</span>
+                  @if (o.address) { <span>📍 {{ o.address }}</span> }
+                  @if (o.zone) { <span>🛵 Zona: {{ o.zone }}</span> }
+                  @if (o.notes) { <span style="color:var(--text-3);font-style:italic;">📝 {{ o.notes }}</span> }
+                </div>
+              }
+              @if (o.isDelivery) {
+                @if (o.dispatched) {
+                  <div style="margin-top:9px;display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--primary-text);background:var(--primary-soft);padding:3px 9px;border-radius:7px;">🛵 En camino · {{ o.driver }}</div>
+                } @else {
+                  <div style="margin-top:9px;display:flex;gap:6px;align-items:center;">
+                    <select #drv style="flex:1;height:30px;border:1px solid var(--border);border-radius:7px;background:var(--surface-2);font-family:inherit;font-size:11.5px;color:var(--text-2);padding:0 6px;">
+                      <option value="">Asignar repartidor…</option>
+                      @for (d of store.drivers(); track d.id) { <option [value]="d.id">{{ d.name }}</option> }
+                    </select>
+                    <button (click)="assign(o.id, drv.value)" style="height:30px;padding:0 10px;border:none;border-radius:7px;background:var(--primary);color:#fff;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">🛵</button>
+                  </div>
+                }
+              }
+              <div style="margin:11px 0;display:flex;flex-direction:column;gap:5px;">
+                @for (it of o.items; track $index) {
+                  <div style="font-size:12.5px;color:var(--text-2);">{{ it }}</div>
+                }
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border);">
+                <div style="display:flex;align-items:center;gap:7px;">
+                  <span style="width:22px;height:22px;border-radius:6px;background:var(--surface-hover);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--text-2);">{{ o.whoInit }}</span>
+                  <span style="font-size:11.5px;color:var(--text-3);">{{ o.who }}</span>
+                </div>
+                <span style="font-size:14px;font-weight:800;">{{ o.total }}</span>
+              </div>
+              <div style="display:flex;gap:7px;margin-top:11px;">
+                @if (o.canBack) {
+                  <button class="icon-soft-btn" (click)="back(o.id, col.key)" aria-label="Regresar" style="width:34px;height:34px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--text-3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  </button>
+                }
+                @if (o.phone) {
+                  <button (click)="notifyWa(o, col.key)" aria-label="Avisar por WhatsApp" title="Avisar al cliente por WhatsApp"
+                          style="width:34px;height:34px;border:none;border-radius:8px;background:#25D366;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(37,211,102,.35);">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.47-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.44-.52.15-.18.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.6-.91-2.2-.24-.58-.49-.5-.67-.5h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.9 1.22 3.1.15.2 2.1 3.2 5.1 4.49.71.3 1.27.49 1.7.63.72.23 1.37.2 1.88.12.58-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.41-.08-.13-.28-.2-.57-.35Z"/><path d="M12.05 2a9.94 9.94 0 0 0-8.6 14.93L2 22l5.2-1.36A9.95 9.95 0 1 0 12.04 2Zm0 18.22c-1.5 0-2.97-.4-4.25-1.16l-.3-.18-3.09.8.83-3-.2-.32a8.27 8.27 0 1 1 7 3.86Z"/></svg>
+                  </button>
+                }
+                @if (o.canFwd) {
+                  <button class="fwd-btn" (click)="forward(o.id, col.key)" [style]="o.fwdStyle">{{ o.fwdLabel }}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,159 @@
+/* ============================================================
+   Comanda — design system (ported verbatim from Comanda.dc.html)
+   ============================================================ */
+* { box-sizing: border-box; }
+
+:root {
+  --bg:#F5F6F8; --surface:#FFFFFF; --surface-2:#FBFBFC; --surface-hover:#F2F4F6;
+  --border:#E7EAEE; --border-strong:#DADEE3;
+  --text:#15181C; --text-2:#5A626E; --text-3:#98A0AB;
+  --primary:#10B981; --primary-strong:#059669; --primary-soft:#E6F7F1; --primary-text:#047857;
+  --blue:#3B82F6; --blue-soft:#EAF1FE; --amber:#F59E0B; --amber-soft:#FDF1E0;
+  --red:#EF4444; --red-soft:#FCEBEB; --violet:#8B5CF6; --violet-soft:#F0EBFD;
+  --shadow-sm:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.05);
+  --shadow-md:0 4px 14px rgba(16,24,40,.06),0 2px 5px rgba(16,24,40,.04);
+  --shadow-lg:0 16px 40px rgba(16,24,40,.12);
+  --r:12px;
+}
+
+[data-theme="dark"] {
+  --bg:#0B0D0F; --surface:#15181B; --surface-2:#1A1E22; --surface-hover:#22272C;
+  --border:#262B31; --border-strong:#333A41;
+  --text:#ECEEF1; --text-2:#99A1AC; --text-3:#69727D;
+  --primary:#10B981; --primary-strong:#34D399; --primary-soft:rgba(16,185,129,.14); --primary-text:#34D399;
+  --blue:#60A5FA; --blue-soft:rgba(96,165,250,.14); --amber:#FBBF24; --amber-soft:rgba(251,191,36,.14);
+  --red:#F87171; --red-soft:rgba(248,113,113,.14); --violet:#A78BFA; --violet-soft:rgba(167,139,250,.14);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4); --shadow-md:0 4px 14px rgba(0,0,0,.4); --shadow-lg:0 16px 40px rgba(0,0,0,.55);
+}
+
+html, body { margin:0; padding:0; height:100%; }
+
+body {
+  font-family:Manrope, system-ui, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-variant-numeric:tabular-nums;
+  -webkit-font-smoothing:antialiased;
+}
+
+::-webkit-scrollbar { width:10px; height:10px; }
+::-webkit-scrollbar-thumb {
+  background:var(--border-strong);
+  border-radius:8px;
+  border:3px solid transparent;
+  background-clip:padding-box;
+}
+
+@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+@keyframes pop-in { from{opacity:0;transform:translateY(6px) scale(.98)} to{opacity:1;transform:none} }
+
+/* Inline SVGs injected via [innerHTML] should fill their flex box */
+[data-icon] svg { display:block; }
+
+/* ============================================================
+   Shared interaction utilities (replace the prototype's
+   style-hover / style-focus attributes with real CSS).
+   `!important` overrides the inline [style] background bindings.
+   ============================================================ */
+.hover-surface:hover { background: var(--surface-hover) !important; }
+.ghost-btn:hover     { background: var(--surface-hover) !important; }
+.solid-btn:hover     { filter: brightness(1.05); }
+.clear-btn:hover     { color: var(--red); }
+.danger-hover:hover  { color: var(--red); }
+.prod-card:hover     { border-color: var(--primary) !important; }
+.icon-soft-btn:hover { background: var(--surface-hover) !important; color: var(--text); }
+.dashed-btn:hover    { color: var(--primary-text); border-color: var(--primary); }
+.fwd-btn:hover       { filter: brightness(1.06); }
+.tab-btn:hover       { color: var(--text-2); }
+.red-soft-btn:hover  { background: var(--red-soft) !important; }
+.primary-soft-btn:hover { background: var(--primary-soft) !important; }
+.link-btn:hover      { text-decoration: underline; }
+
+/* ============================================================
+   Formularios dentro de modales (reutilizable)
+   ============================================================ */
+.cmd-field { display: block; margin-bottom: 13px; }
+.cmd-field > span { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
+.cmd-input, .cmd-select {
+  width: 100%; height: 40px; border: 1px solid var(--border); background: var(--surface-2);
+  border-radius: 9px; padding: 0 12px; font-size: 14px; color: var(--text); outline: none; font-family: inherit;
+}
+textarea.cmd-input { height: auto; padding: 10px 12px; resize: vertical; min-height: 64px; }
+.cmd-input:focus, .cmd-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+.cmd-row { display: flex; gap: 10px; }
+.cmd-row > .cmd-field { flex: 1; }
+.cmd-seg { display: flex; gap: 8px; }
+.cmd-seg button {
+  flex: 1; height: 38px; border: 1px solid var(--border); background: var(--surface-2);
+  border-radius: 9px; font-size: 13px; font-weight: 600; color: var(--text-2); cursor: pointer; font-family: inherit;
+}
+.cmd-seg button.on { background: var(--primary-soft); color: var(--primary-text); border-color: var(--primary); }
+.cmd-actions { display: flex; gap: 9px; margin-top: 18px; }
+.cmd-cancel {
+  flex: 1; height: 42px; border: 1px solid var(--border); background: var(--surface-2);
+  border-radius: 10px; font-size: 13.5px; font-weight: 600; color: var(--text-2); cursor: pointer; font-family: inherit;
+}
+.cmd-cancel:hover { background: var(--surface-hover); }
+.cmd-submit {
+  flex: 1.4; height: 42px; border: none; border-radius: 10px; color: #fff; font-weight: 700; font-size: 13.5px;
+  cursor: pointer; font-family: inherit; background: linear-gradient(140deg, #10b981, #059669);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+.cmd-submit:hover:not(:disabled) { filter: brightness(1.05); }
+.cmd-submit:disabled { opacity: 0.6; cursor: default; }
+.cmd-err { font-size: 12.5px; font-weight: 600; color: var(--red); background: var(--red-soft); border-radius: 9px; padding: 9px 12px; margin-bottom: 12px; }
+
+/* ============================================================
+   Responsive — adapta los layouts (con estilos inline) a móvil
+   sobreescribiendo las declaraciones de grid/flex por selector
+   de atributo. `!important` gana a los estilos inline.
+   ============================================================ */
+@media (max-width: 1024px) {
+  [style*="grid-template-columns:1.55fr 1fr"],
+  [style*="grid-template-columns:1fr 1.55fr"],
+  [style*="grid-template-columns:1.6fr 1fr"],
+  [style*="grid-template-columns:1fr 1.1fr"] { grid-template-columns: 1fr !important; }
+
+  /* POS y Menú: contenedores de alto fijo en fila → apilar */
+  [style*="height:calc(100vh - 64px)"] { flex-direction: column !important; height: auto !important; }
+  [style*="width:368px"] { width: 100% !important; }   /* carrito POS */
+
+  /* POS: apilar por CLASES (más confiable que el substring). El catálogo deja de
+     tener scroll interno (colapsaba a 0) y fluye natural; el carrito va debajo. */
+  .pos-shell { flex-direction: column !important; height: auto !important; }
+  .pos-catalog { flex: none !important; width: 100% !important; }
+  .pos-scroll { overflow: visible !important; flex: none !important; height: auto !important; }
+  .pos-cart { width: 100% !important; flex: none !important; border-left: none !important; border-top: 1px solid var(--border) !important; }
+
+  /* Menú digital: mismo patrón — apilar rail + lista y soltar el scroll interno;
+     ocultar la vista previa móvil (es redundante en un celular real). */
+  .menu-shell { flex-direction: column !important; height: auto !important; }
+  .menu-rail { width: 100% !important; flex-direction: row !important; flex-wrap: wrap !important; border-right: none !important; border-bottom: 1px solid var(--border) !important; }
+  .menu-scroll { overflow: visible !important; flex: none !important; height: auto !important; }
+  .menu-preview { display: none !important; }
+  [style*="width:324px"] { display: none !important; } /* vista previa móvil del Menú */
+  [style*="width:178px"] { width: 100% !important; border-right: none !important; } /* riel de categorías */
+}
+
+@media (max-width: 760px) {
+  [style*="grid-template-columns:repeat(3,1fr)"],
+  [style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+
+  /* Oculta el buscador y el chip de sucursal del header en pantallas pequeñas */
+  .topbar [style*="max-width:420px"] { display: none !important; }
+  .topbar .branch-chip { display: none !important; }
+  .topbar { gap: 10px !important; padding: 0 14px !important; }
+}
+
+@media (max-width: 560px) {
+  /* La CTA queda solo con el ícono "+" para ahorrar espacio */
+  .topbar .cta { padding: 0 11px !important; }
+  .topbar .cta .cta-label { display: none !important; }
+}
+
+@media (max-width: 560px) {
+  [style*="grid-template-columns:repeat(4,1fr)"] { grid-template-columns: 1fr 1fr !important; }
+  /* Reduce el padding generoso de las páginas */
+  [style*="padding:26px"] { padding: 16px !important; }
+  [style*="padding:24px 26px"] { padding: 16px 14px !important; }
+}

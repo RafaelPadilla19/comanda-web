@@ -1,0 +1,69 @@
+<div style="padding:26px;max-width:920px;margin:0 auto;">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+    <div>
+      <div style="font-size:20px;font-weight:800;letter-spacing:-.4px;">Inteligencia ✨</div>
+      <div style="font-size:13px;color:var(--text-3);margin-top:2px;">Hallazgos y recomendaciones automáticas de tu negocio.</div>
+    </div>
+    <div style="display:flex;gap:6px;">
+      @for (r of [['week','Semana'],['month','Mes']]; track r[0]) {
+        <button (click)="setRange($any(r[0]))"
+          [style]="'border:1px solid var(--border);cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:700;padding:7px 14px;border-radius:9px;' + (range() === r[0] ? 'background:var(--primary-soft);color:var(--primary-text);border-color:var(--primary);' : 'background:var(--surface);color:var(--text-2);')">
+          {{ r[1] }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div style="padding:48px;text-align:center;color:var(--text-3);">Analizando tus datos…</div>
+  } @else if (data(); as d) {
+    @if (!d.hasData) {
+      <div style="margin-top:24px;background:var(--surface);border:1px dashed var(--border);border-radius:16px;padding:48px 24px;text-align:center;">
+        <div style="font-size:38px;">🌱</div>
+        <div style="font-size:15px;font-weight:700;margin-top:10px;">Aún no hay suficientes datos</div>
+        <div style="font-size:13px;color:var(--text-3);margin-top:4px;">Registra algunas ventas y aquí aparecerán hallazgos y combos sugeridos automáticamente.</div>
+      </div>
+    } @else {
+      <!-- Tarjetas de hallazgos -->
+      <div style="margin-top:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;">
+        @for (c of d.cards; track c.title) {
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow-sm);">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:20px;">{{ c.icon }}</span>
+              <span style="font-size:12.5px;color:var(--text-3);font-weight:600;">{{ c.title }}</span>
+            </div>
+            <div style="font-size:21px;font-weight:800;letter-spacing:-.3px;margin-top:8px;" [style.color]="toneColor(c.tone)">{{ c.value }}</div>
+            <div style="font-size:12.5px;color:var(--text-2);margin-top:3px;line-height:1.4;">{{ c.detail }}</div>
+          </div>
+        }
+      </div>
+
+      <!-- Se piden juntos / combos sugeridos -->
+      <div style="margin-top:26px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:16px;font-weight:800;">🍱 Se piden juntos</span>
+        <span style="font-size:11.5px;color:var(--text-3);">Combos que podrías ofrecer</span>
+      </div>
+      @if (d.combos.length) {
+        <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px;">
+          @for (combo of d.combos; track combo.productA + combo.productB) {
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:12px;">
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13.5px;font-weight:700;">
+                  {{ combo.productA }} <span style="color:var(--text-3);font-weight:600;">+</span> {{ combo.productB }}
+                </div>
+                <div style="font-size:12px;color:var(--primary-text);font-weight:600;margin-top:3px;">💡 {{ combo.suggestion }}</div>
+              </div>
+              <span style="flex-shrink:0;font-size:11.5px;font-weight:800;color:var(--text-2);background:var(--surface-hover);padding:4px 10px;border-radius:20px;">{{ combo.count }}× juntos</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <div style="margin-top:12px;font-size:13px;color:var(--text-3);background:var(--surface);border:1px dashed var(--border);border-radius:14px;padding:18px;">
+          Todavía no detectamos productos que se pidan juntos con frecuencia. Cuando tus clientes combinen platillos, aquí verás sugerencias de combos.
+        </div>
+      }
+
+      <div style="margin-top:18px;font-size:11.5px;color:var(--text-3);">Basado en {{ d.ordersAnalyzed }} pedido(s) del último período · se actualiza solo.</div>
+    }
+  }
+</div>
