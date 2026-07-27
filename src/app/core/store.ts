@@ -7,7 +7,7 @@ import { IVA_RATE, money } from '@shared/format';
 import { ComandaApi } from '@core/api/comanda-api.service';
 import { ToastService } from '@core/ui/toast.service';
 import {
-  CashSessionDto, CategoryDto, DriverDto, InventoryItemDto, MovementType, OrderBoardDto, OrderDto,
+  CashSessionDto, CategoryDto, DeliveryZoneDto, DriverDto, InventoryItemDto, MovementType, OrderBoardDto, OrderDto,
   ProductDto, ProductOptionDto,
 } from '@core/api/models';
 
@@ -41,6 +41,17 @@ export class ComandaStore {
   readonly tableNumber = signal<number>(1);
   readonly discount = signal<number>(0);
   readonly payment = signal<string>('efectivo');
+
+  // ---- Delivery desde el POS (pedidos telefónicos) ----
+  readonly zones = signal<DeliveryZoneDto[]>([]);
+  readonly deliveryZoneId = signal<string>('');
+  readonly customerName = signal<string>('');
+  readonly customerPhone = signal<string>('');
+  readonly customerAddress = signal<string>('');
+
+  loadZones(): void {
+    this.api.listZones().subscribe((z) => this.zones.set(z.filter((x) => x.isActive)));
+  }
 
   /** Etiqueta de destino del pedido que se envía al backend (campo `table`). */
   readonly table = computed(() =>
@@ -138,6 +149,7 @@ export class ComandaStore {
   /** Cambia el tipo de pedido (mesa / para llevar / delivery). */
   setChannel(c: 'mesa' | 'llevar' | 'delivery'): void {
     this.orderChannel.set(c);
+    if (c === 'delivery' && this.zones().length === 0) this.loadZones();
   }
 
   /** Sube o baja el número de mesa, acotado a 1..99. */
@@ -245,6 +257,7 @@ export class ComandaStore {
       isDelivery: o.channel === 'Delivery', zone: o.deliveryZoneName,
       driverId: o.driverId, driver: o.driverName, dispatched: !!o.dispatchedAt,
       paid: o.isPaid,
+      riderJobId: o.riderJobId, riderJobStatus: o.riderJobStatus,
     };
   }
 
@@ -274,6 +287,14 @@ export class ComandaStore {
   /** Asigna un repartidor a un pedido de delivery (lo marca "en camino"). */
   assignDriver(orderId: string, driverId: string): void {
     this.api.assignDriver(orderId, driverId).subscribe(() => { this.loadOrders(); this.toast.success('Repartidor asignado.'); });
+  }
+
+  /** Publica el pedido al pool de riders independientes (RidersHub) cuando no hay repartidor propio disponible. */
+  requestExternalRider(orderId: string): void {
+    this.api.requestExternalRider(orderId).subscribe({
+      next: () => { this.loadOrders(); this.toast.success('Pedido publicado al pool de riders. Buscando quién lo tome…'); },
+      error: () => this.toast.error('No se pudo publicar el pedido al pool de riders.'),
+    });
   }
 
   // ---- Catálogo (API) ----
@@ -331,9 +352,24 @@ export class ComandaStore {
       productId: c.id, productName: c.name, modifiers: c.modifiers, unitPrice: c.price, quantity: c.qty,
     }));
     if (items.length === 0) return;
+
+    const isDelivery = this.orderChannel() === 'delivery';
+    if (isDelivery && (!this.deliveryZoneId() || !this.customerPhone().trim() || !this.customerAddress().trim())) {
+      this.toast.error('Para delivery indica zona, teléfono y dirección del cliente.');
+      return;
+    }
+
+    const channel = isDelivery ? 'Delivery' : this.orderChannel() === 'llevar' ? 'Llevar' : 'Local';
     // El descuento manual (fichas %) ahora se persiste en el pedido.
-    this.api.createOrder({ table: this.table(), manualDiscount: this.discountAmount(), items }).subscribe((o) => {
+    this.api.createOrder({
+      table: this.table(), manualDiscount: this.discountAmount(), items, channel,
+      deliveryZoneId: isDelivery ? this.deliveryZoneId() : undefined,
+      customerName: isDelivery ? this.customerName().trim() : undefined,
+      customerPhone: isDelivery ? this.customerPhone().trim() : undefined,
+      customerAddress: isDelivery ? this.customerAddress().trim() : undefined,
+    }).subscribe((o) => {
       this.clearCart();
+      this.deliveryZoneId.set(''); this.customerName.set(''); this.customerPhone.set(''); this.customerAddress.set('');
       this.toast.success(`Pedido ${o.code} creado.`);
       onDone?.();
     });
