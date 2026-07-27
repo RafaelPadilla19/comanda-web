@@ -47,6 +47,8 @@ export interface BranchDto {
   hours: string;
   whatsappPhone: string;
   isActive: boolean;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export interface CategoryDto {
@@ -98,6 +100,8 @@ export interface OrderDto {
   driverId: string | null;
   driverName: string;
   dispatchedAt: string | null;
+  riderJobId: string | null;
+  riderJobStatus: string;
   couponCode: string;
   discountAmount: number;
   isPaid: boolean;
@@ -475,6 +479,8 @@ export interface SubscriptionPaymentDto {
   isPaid: boolean;
   createdAt: string;
   paidAt: string | null;
+  periodEndsAt: string | null;
+  periodMonths: number;
 }
 
 export interface BillingDto {

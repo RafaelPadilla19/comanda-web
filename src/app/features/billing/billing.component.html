@@ -39,6 +39,12 @@
             Próximo cobro: <b>{{ money(b.priceMonthly) }}</b> de suscripción + <b style="color:#d97706;">{{ money(pendingOverage()) }}</b> de pedidos extra = <b>{{ money(nextChargeTotal()) }}</b>
           </div>
         }
+        @if (blockedPayUrl(); as url) {
+          <div style="margin-top:12px;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;">
+            <div style="font-size:12.5px;color:#b45309;font-weight:600;margin-bottom:8px;">⚠️ El navegador bloqueó la ventana de pago.</div>
+            <a [href]="url" target="_blank" rel="noopener" style="display:inline-block;font-size:13px;font-weight:700;color:#fff;background:#d97706;padding:8px 16px;border-radius:8px;text-decoration:none;">Abrir página de pago →</a>
+          </div>
+        }
       } @else if (b.hasPlan) {
         <div style="margin-top:16px;font-size:13px;color:var(--text-2);">✅ Tu plan gratuito está activo, sin cobros. Mejora a un plan pago abajo cuando lo necesites.</div>
       } @else {
@@ -148,6 +154,9 @@
           <div style="flex:1;">
             <div style="font-size:13.5px;font-weight:700;">{{ p.planName }}</div>
             <div style="font-size:11.5px;color:var(--text-3);">{{ fmtDate(p.isPaid ? p.paidAt : p.createdAt) }} · {{ p.isPaid ? 'Pagado' : 'Pendiente' }}</div>
+            @if (periodRange(p); as range) {
+              <div style="font-size:11px;color:var(--text-3);margin-top:2px;">🗓️ Corresponde a: {{ range }}</div>
+            }
           </div>
           <div style="font-size:14px;font-weight:800;">{{ money(p.amount) }}</div>
         </div>

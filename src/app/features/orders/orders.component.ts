@@ -29,6 +29,11 @@ export class OrdersComponent implements OnInit {
     if (driverId) this.store.assignDriver(orderId, driverId);
   }
 
+  /** Publica el pedido al pool de riders independientes cuando no hay repartidor propio disponible. */
+  protected requestExternalRider(orderId: string): void {
+    this.store.requestExternalRider(orderId);
+  }
+
   private readonly defs: ColumnDef[] = [
     { key: 'nuevos', title: 'Nuevos', accent: 'blue', fwd: 'Preparar' },
     { key: 'preparacion', title: 'En preparación', accent: 'amber', fwd: 'Marcar listo' },

@@ -6,6 +6,7 @@ import { ComandaStore } from '@core/store';
 import { ComandaApi } from '@core/api/comanda-api.service';
 import { AuthService } from '@core/api/auth.service';
 import { ModalComponent } from '@shared/modal.component';
+import { LocationPickerComponent } from '@shared/location-picker.component';
 import { BranchDto, CouponDto, DeliveryZoneDto, DiscountType, DriverDto, LoyaltyConfigDto, PrinterDto, UserDto, UserRole } from '@core/api/models';
 import { badge, swStyle, swKnob } from '@shared/ui';
 
@@ -13,7 +14,7 @@ type Tab = 'usuarios' | 'impresoras' | 'sucursales' | 'entregas' | 'promociones'
 
 @Component({
   selector: 'app-settings',
-  imports: [ModalComponent, FormsModule, RouterLink],
+  imports: [ModalComponent, FormsModule, RouterLink, LocationPickerComponent],
   templateUrl: './settings.component.html',
 })
 export class SettingsComponent implements OnInit {
@@ -122,6 +123,7 @@ export class SettingsComponent implements OnInit {
   protected readonly branchCards = computed(() =>
     this.branchesRaw().map((b) => ({
       id: b.id, name: b.name, addr: b.address, hours: b.hours, whatsapp: b.whatsappPhone, isActive: b.isActive,
+      lat: b.latitude, lng: b.longitude,
     })),
   );
 
@@ -203,10 +205,17 @@ export class SettingsComponent implements OnInit {
   protected readonly bAddress = signal('');
   protected readonly bHours = signal('Lun–Dom · 11:00 – 22:00');
   protected readonly bWhatsapp = signal('');
+  protected readonly bLat = signal<number | null>(null);
+  protected readonly bLng = signal<number | null>(null);
 
   protected openBranch(): void {
     this.bName.set(''); this.bAddress.set(''); this.bHours.set('Lun–Dom · 11:00 – 22:00'); this.bWhatsapp.set('');
+    this.bLat.set(null); this.bLng.set(null);
     this.branchOpen.set(true);
+  }
+
+  protected onBranchLocation(loc: { lat: number; lng: number }): void {
+    this.bLat.set(loc.lat); this.bLng.set(loc.lng);
   }
 
   protected submitBranch(): void {
@@ -214,6 +223,7 @@ export class SettingsComponent implements OnInit {
     this.api.createBranch({
       name: this.bName().trim(), address: this.bAddress().trim(),
       hours: this.bHours().trim(), whatsappPhone: this.bWhatsapp().trim(),
+      latitude: this.bLat(), longitude: this.bLng(),
     }).subscribe(() => { this.branchOpen.set(false); this.api.listBranches().subscribe((b) => this.branchesRaw.set(b)); });
   }
 
@@ -275,11 +285,18 @@ export class SettingsComponent implements OnInit {
   protected readonly ebHours = signal('');
   protected readonly ebWhatsapp = signal('');
   protected readonly ebActive = signal(true);
+  protected readonly ebLat = signal<number | null>(null);
+  protected readonly ebLng = signal<number | null>(null);
 
-  protected openEditBranch(b: { id: string; name: string; addr: string; hours: string; whatsapp: string; isActive: boolean }): void {
+  protected openEditBranch(b: { id: string; name: string; addr: string; hours: string; whatsapp: string; isActive: boolean; lat: number | null; lng: number | null }): void {
     this.ebId.set(b.id); this.ebName.set(b.name); this.ebAddress.set(b.addr);
     this.ebHours.set(b.hours); this.ebWhatsapp.set(b.whatsapp); this.ebActive.set(b.isActive);
+    this.ebLat.set(b.lat); this.ebLng.set(b.lng);
     this.editBranchOpen.set(true);
+  }
+
+  protected onEditBranchLocation(loc: { lat: number; lng: number }): void {
+    this.ebLat.set(loc.lat); this.ebLng.set(loc.lng);
   }
 
   protected submitEditBranch(): void {
@@ -287,6 +304,7 @@ export class SettingsComponent implements OnInit {
     this.api.updateBranch(this.ebId(), {
       name: this.ebName().trim(), address: this.ebAddress().trim(),
       hours: this.ebHours().trim(), whatsappPhone: this.ebWhatsapp().trim(), isActive: this.ebActive(),
+      latitude: this.ebLat(), longitude: this.ebLng(),
     }).subscribe(() => {
       this.editBranchOpen.set(false);
       this.api.listBranches().subscribe((b) => this.branchesRaw.set(b));

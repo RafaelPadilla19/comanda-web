@@ -17,6 +17,18 @@ export class BillingComponent implements OnInit {
   protected readonly processing = signal(false);
   protected readonly changingId = signal<string | null>(null);
   protected readonly msg = signal<string | null>(null);
+  /** Link de pago cuando el navegador bloqueó la ventana emergente (evita que el usuario reintente y duplique el cobro). */
+  protected readonly blockedPayUrl = signal<string | null>(null);
+
+  /** Abre la URL de pago; si el navegador bloquea el popup, deja el link visible en vez de fallar en silencio. */
+  private openPayment(url: string): void {
+    this.blockedPayUrl.set(null);
+    const win = window.open(url, '_blank');
+    if (!win || win.closed) {
+      this.blockedPayUrl.set(url);
+      this.msg.set('Tu navegador bloqueó la ventana de pago. Usa el enlace de abajo para continuar.');
+    }
+  }
 
   ngOnInit(): void {
     this.load();
@@ -58,7 +70,7 @@ export class BillingComponent implements OnInit {
       next: (r) => {
         this.changingId.set(null);
         if (r.paid) { this.msg.set(r.message || 'Plan actualizado.'); this.load(); }
-        else if (r.paymentUrl) window.open(r.paymentUrl, '_blank');
+        else if (r.paymentUrl) this.openPayment(r.paymentUrl);
       },
       error: (e) => {
         this.changingId.set(null);
@@ -112,6 +124,15 @@ export class BillingComponent implements OnInit {
     return new Date(iso).toLocaleDateString('es-SV', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
+  /** Rango de fechas que cubre un pago confirmado, ej. "21 jun – 21 jul 2026". Null si aún no se confirma. */
+  protected periodRange(p: { periodEndsAt: string | null; periodMonths: number }): string | null {
+    if (!p.periodEndsAt) return null;
+    const end = new Date(p.periodEndsAt);
+    const start = new Date(end);
+    start.setMonth(start.getMonth() - (p.periodMonths || 1));
+    return `${this.fmtDate(start.toISOString())} – ${this.fmtDate(end.toISOString())}`;
+  }
+
   protected pay(): void {
     if (this.processing()) return;
     this.processing.set(true);
@@ -120,7 +141,7 @@ export class BillingComponent implements OnInit {
       next: (r) => {
         this.processing.set(false);
         if (r.paid) { this.msg.set(r.message || 'Plan activado.'); this.load(); }
-        else if (r.paymentUrl) window.open(r.paymentUrl, '_blank');
+        else if (r.paymentUrl) this.openPayment(r.paymentUrl);
       },
       error: (e) => {
         this.processing.set(false);

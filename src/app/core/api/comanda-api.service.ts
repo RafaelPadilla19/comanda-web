@@ -51,7 +51,11 @@ export class ComandaApi {
   // ---- Pedidos ----
   orderBoard(): Observable<OrderBoardDto> { return this.http.get<OrderBoardDto>(`${this.base}/orders/board`); }
   listOrders(): Observable<OrderDto[]> { return this.http.get<OrderDto[]>(`${this.base}/orders`); }
-  createOrder(body: { table: string; createdByName?: string; branchId?: string | null; couponCode?: string | null; manualDiscount?: number; items: { productId: string; productName: string; modifiers?: string; unitPrice: number; quantity: number }[] }): Observable<OrderDto> {
+  createOrder(body: {
+    table: string; createdByName?: string; branchId?: string | null; couponCode?: string | null; manualDiscount?: number;
+    channel?: 'Local' | 'Llevar' | 'Delivery'; deliveryZoneId?: string; customerName?: string; customerPhone?: string; customerAddress?: string;
+    items: { productId: string; productName: string; modifiers?: string; unitPrice: number; quantity: number }[];
+  }): Observable<OrderDto> {
     return this.http.post<OrderDto>(`${this.base}/orders`, body);
   }
   moveOrder(id: string, direction: 1 | -1): Observable<OrderDto> {
@@ -59,6 +63,11 @@ export class ComandaApi {
   }
   assignDriver(orderId: string, driverId: string): Observable<OrderDto> {
     return this.http.post<OrderDto>(`${this.base}/orders/${orderId}/assign-driver`, { id: orderId, driverId });
+  }
+
+  /** Publica el pedido al pool de riders independientes (RidersHub). */
+  requestExternalRider(orderId: string): Observable<OrderDto> {
+    return this.http.post<OrderDto>(`${this.base}/orders/${orderId}/request-external-rider`, {});
   }
 
   // ---- Delivery: zonas y repartidores ----

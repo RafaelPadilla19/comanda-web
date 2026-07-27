@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ComandaStore } from '@core/store';
 import { ModalComponent } from '@shared/modal.component';
 import { ProductDto, ProductOptionDto } from '@core/api/models';
@@ -6,7 +7,7 @@ import { money, IVA_RATE } from '@shared/format';
 
 @Component({
   selector: 'app-pos',
-  imports: [ModalComponent],
+  imports: [ModalComponent, FormsModule],
   templateUrl: './pos.component.html',
 })
 export class PosComponent implements OnInit {
