@@ -62,7 +62,7 @@
                       @for (d of store.drivers(); track d.id) { <option [value]="d.id">{{ d.name }}</option> }
                     </select>
                     <button (click)="assign(o.id, drv.value)" style="height:30px;padding:0 10px;border:none;border-radius:7px;background:var(--primary);color:#fff;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">🛵</button>
-                    <button (click)="requestExternalRider(o.id)" title="Buscar rider externo en el pool" style="height:30px;padding:0 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text-2);font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">🔍</button>
+                    <button disabled title="Próximamente: buscar rider externo en el pool" style="height:30px;padding:0 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text-3);font-size:11.5px;font-weight:700;cursor:not-allowed;font-family:inherit;opacity:.5;">🔍</button>
                   </div>
                 }
               }
