@@ -44,8 +44,15 @@
                 </div>
               }
               @if (o.isDelivery) {
-                @if (o.dispatched) {
-                  <div style="margin-top:9px;display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--primary-text);background:var(--primary-soft);padding:3px 9px;border-radius:7px;">🛵 En camino · {{ o.driver }}</div>
+                @if (o.riderJobStatus === 'Delivered') {
+                  <div style="margin-top:9px;display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#fff;background:#10B981;padding:3px 9px;border-radius:7px;">✅ Entregado por rider · {{ o.driver }}</div>
+                } @else if (o.dispatched) {
+                  <div style="margin-top:9px;display:flex;flex-direction:column;gap:4px;align-items:flex-start;">
+                    <div style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--primary-text);background:var(--primary-soft);padding:3px 9px;border-radius:7px;">🛵 En camino · {{ o.driver }}</div>
+                    @if (o.riderProposedFee) {
+                      <div style="font-size:10.5px;color:var(--amber);font-weight:700;">💵 El rider pidió ${{ o.riderProposedFee.toFixed(2) }} (en vez de ${{ o.deliveryFee.toFixed(2) }})</div>
+                    }
+                  </div>
                 } @else if (o.riderJobId) {
                   <div style="margin-top:9px;display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--text-2);background:var(--surface-2);padding:3px 9px;border-radius:7px;">🔍 Buscando rider externo…</div>
                 } @else {

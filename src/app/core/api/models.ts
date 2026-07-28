@@ -102,8 +102,11 @@ export interface OrderDto {
   dispatchedAt: string | null;
   riderJobId: string | null;
   riderJobStatus: string;
+  riderProposedFee: number | null;
   couponCode: string;
   discountAmount: number;
+  tipRestaurant: number;
+  tipRider: number;
   isPaid: boolean;
   paymentUrl: string;
   total: number;
@@ -222,6 +225,8 @@ export interface PublicOrderRequest {
   redeemPoints?: boolean;
   payOnline?: boolean;
   returnUrl?: string;
+  tipRestaurant?: number;
+  tipRider?: number;
   items: PublicOrderLine[];
 }
 

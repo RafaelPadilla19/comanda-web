@@ -255,9 +255,9 @@ export class ComandaStore {
       channel: o.channel, online: o.createdByName === 'Tienda online',
       customer: o.customerName, phone: o.customerPhone, address: o.customerAddress, notes: o.notes,
       isDelivery: o.channel === 'Delivery', zone: o.deliveryZoneName,
-      driverId: o.driverId, driver: o.driverName, dispatched: !!o.dispatchedAt,
+      driverId: o.driverId, driver: o.driverName, dispatched: !!o.dispatchedAt, deliveryFee: o.deliveryFee,
       paid: o.isPaid,
-      riderJobId: o.riderJobId, riderJobStatus: o.riderJobStatus,
+      riderJobId: o.riderJobId, riderJobStatus: o.riderJobStatus, riderProposedFee: o.riderProposedFee,
     };
   }
 
