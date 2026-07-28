@@ -98,7 +98,31 @@ export class StorefrontComponent implements OnInit {
   protected readonly discount = computed(() =>
     Math.min(this.appliedDiscount() + this.pointsDiscount(), this.subtotal()),
   );
-  protected readonly total = computed(() => Math.max(0, this.subtotal() + this.deliveryFee() - this.discount()));
+  protected readonly total = computed(() =>
+    Math.max(0, this.subtotal() + this.deliveryFee() - this.discount() + this.tipRestaurant() + this.tipRider()),
+  );
+
+  // ---- Propinas (opcionales) ----
+  protected readonly tipRestaurantPct = signal<number | null>(null); // null = "sin propina" seleccionado
+  protected readonly tipRestaurantCustom = signal<number | null>(null);
+  protected readonly tipRestaurant = computed(() => {
+    if (this.tipRestaurantCustom() != null) return this.tipRestaurantCustom()!;
+    if (!this.tipRestaurantPct()) return 0;
+    return Math.round(this.subtotal() * (this.tipRestaurantPct()! / 100) * 100) / 100;
+  });
+  protected readonly tipRider = signal<number>(0);
+
+  protected setTipRestaurantPct(pct: number): void {
+    this.tipRestaurantPct.set(pct); this.tipRestaurantCustom.set(null);
+  }
+  protected setTipRestaurantCustom(v: string): void {
+    const n = Number(v);
+    this.tipRestaurantCustom.set(n > 0 ? n : null);
+    this.tipRestaurantPct.set(null);
+  }
+  protected setTipRider(amount: number): void {
+    this.tipRider.set(this.tipRider() === amount ? 0 : amount);
+  }
 
   // ---- Método de pago ----
   protected readonly payOnline = signal(false);
@@ -274,6 +298,8 @@ export class StorefrontComponent implements OnInit {
       redeemPoints: this.redeemPoints(),
       payOnline: this.payOnline(),
       returnUrl: window.location.href,  // el front sabe a dónde volver tras pagar
+      tipRestaurant: this.tipRestaurant(),
+      tipRider: this.channel() === 'Delivery' ? this.tipRider() : 0,
       items: this.cart().map((l) => ({ productId: l.product.id, quantity: l.qty, variant: l.variant, extras: l.extras })),
     }).subscribe({
       next: (order) => {
@@ -305,6 +331,7 @@ export class StorefrontComponent implements OnInit {
     this.removeCoupon();
     this.loyalty.set(null); this.redeemPoints.set(false);
     this.payOnline.set(false);
+    this.tipRestaurantPct.set(null); this.tipRestaurantCustom.set(null); this.tipRider.set(0);
   }
 
   protected channelLabel(c: OrderChannel): string {

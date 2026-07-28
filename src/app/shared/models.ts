@@ -72,9 +72,11 @@ export interface KitchenOrder {
   driverId: string | null;
   driver: string;         // repartidor asignado
   dispatched: boolean;    // "en camino"
+  deliveryFee: number;    // tarifa de envío publicada
   paid: boolean;          // pagado en línea
   riderJobId: string | null;   // job publicado en el pool de riders externos (RidersHub)
   riderJobStatus: string;      // Open/Accepted/Delivered
+  riderProposedFee: number | null; // si el rider pidió otra tarifa al aceptar (se paga fuera de Comanda)
 }
 
 export type OrdersState = Record<OrderColumn, KitchenOrder[]>;

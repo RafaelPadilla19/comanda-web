@@ -255,6 +255,29 @@
           }
         </div>
 
+        <div class="sf-field">
+          <span>¿Deseas dejar propina para el restaurante?</span>
+          <div class="sf-tips">
+            <button type="button" class="sf-tip" [class.active]="tipRestaurantPct() === null && !tipRestaurantCustom()" (click)="setTipRestaurantPct(0)">Sin propina</button>
+            <button type="button" class="sf-tip" [class.active]="tipRestaurantPct() === 5" (click)="setTipRestaurantPct(5)">5%</button>
+            <button type="button" class="sf-tip" [class.active]="tipRestaurantPct() === 10" (click)="setTipRestaurantPct(10)">10%</button>
+            <button type="button" class="sf-tip" [class.active]="tipRestaurantPct() === 15" (click)="setTipRestaurantPct(15)">15%</button>
+          </div>
+          <input type="number" min="0" step="0.25" class="sf-tip-custom" placeholder="Otro monto ($)"
+                 [ngModel]="tipRestaurantCustom()" (ngModelChange)="setTipRestaurantCustom($event)" />
+        </div>
+
+        @if (channel() === 'Delivery') {
+          <div class="sf-field">
+            <span>¿Propina para quien te entrega?</span>
+            <div class="sf-tips">
+              <button type="button" class="sf-tip" [class.active]="tipRider() === 0.5" (click)="setTipRider(0.5)">$0.50</button>
+              <button type="button" class="sf-tip" [class.active]="tipRider() === 1" (click)="setTipRider(1)">$1</button>
+              <button type="button" class="sf-tip" [class.active]="tipRider() === 2" (click)="setTipRider(2)">$2</button>
+            </div>
+          </div>
+        }
+
         @if (formError(); as fe) { <p class="sf-err">{{ fe }}</p> }
       </div>
       <div class="sf-sheet-foot">
@@ -264,6 +287,12 @@
         }
         @if (discount() > 0) {
           <div class="sf-row" style="color:var(--primary-text);"><span>Descuento {{ appliedCode() ? '(' + appliedCode() + ')' : '' }}</span><span>− {{ money(discount()) }}</span></div>
+        }
+        @if (tipRestaurant() > 0) {
+          <div class="sf-row"><span>Propina restaurante</span><span>{{ money(tipRestaurant()) }}</span></div>
+        }
+        @if (tipRider() > 0) {
+          <div class="sf-row"><span>Propina rider</span><span>{{ money(tipRider()) }}</span></div>
         }
         <div class="sf-row sf-row-total"><span>Total</span><span>{{ money(total()) }}</span></div>
         <button type="button" class="sf-cta" [disabled]="!canSubmit() || submitting()" (click)="submit()">
