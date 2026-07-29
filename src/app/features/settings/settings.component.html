@@ -272,6 +272,14 @@
       <label class="cmd-field"><span>Ubicación exacta (para que el rider sepa dónde recoger)</span>
         <app-location-picker [lat]="bLat()" [lng]="bLng()" (locationChange)="onBranchLocation($event)" />
       </label>
+      <label class="cmd-field"><span>Radio de cobertura en km (opcional — cobra por distancia real en vez de zonas fijas)</span>
+        <input class="cmd-input" type="number" min="0" step="0.5" name="cr" [ngModel]="bCoverageRadiusKm()" (ngModelChange)="bCoverageRadiusKm.set($event)" placeholder="Ej. 5" /></label>
+      @if (bCoverageRadiusKm()) {
+        <label class="cmd-field"><span>Tarifa base ($)</span>
+          <input class="cmd-input" type="number" min="0" step="0.25" name="dbf" [ngModel]="bDeliveryBaseFee()" (ngModelChange)="bDeliveryBaseFee.set($event)" /></label>
+        <label class="cmd-field"><span>Tarifa por km ($)</span>
+          <input class="cmd-input" type="number" min="0" step="0.05" name="dfk" [ngModel]="bDeliveryFeePerKm()" (ngModelChange)="bDeliveryFeePerKm.set($event)" /></label>
+      }
       <div class="cmd-actions">
         <button type="button" class="cmd-cancel" (click)="branchOpen.set(false)">Cancelar</button>
         <button type="submit" class="cmd-submit" [disabled]="!bName().trim() || !bAddress().trim()">Crear sucursal</button>
@@ -294,6 +302,14 @@
       <label class="cmd-field"><span>Ubicación exacta (para que el rider sepa dónde recoger)</span>
         <app-location-picker [lat]="ebLat()" [lng]="ebLng()" (locationChange)="onEditBranchLocation($event)" />
       </label>
+      <label class="cmd-field"><span>Radio de cobertura en km (opcional — cobra por distancia real en vez de zonas fijas)</span>
+        <input class="cmd-input" type="number" min="0" step="0.5" name="ecr" [ngModel]="ebCoverageRadiusKm()" (ngModelChange)="ebCoverageRadiusKm.set($event)" placeholder="Ej. 5" /></label>
+      @if (ebCoverageRadiusKm()) {
+        <label class="cmd-field"><span>Tarifa base ($)</span>
+          <input class="cmd-input" type="number" min="0" step="0.25" name="edbf" [ngModel]="ebDeliveryBaseFee()" (ngModelChange)="ebDeliveryBaseFee.set($event)" /></label>
+        <label class="cmd-field"><span>Tarifa por km ($)</span>
+          <input class="cmd-input" type="number" min="0" step="0.05" name="edfk" [ngModel]="ebDeliveryFeePerKm()" (ngModelChange)="ebDeliveryFeePerKm.set($event)" /></label>
+      }
       <label class="cmd-field" style="flex-direction:row;align-items:center;gap:10px;cursor:pointer;">
         <input type="checkbox" name="act" [ngModel]="ebActive()" (ngModelChange)="ebActive.set($event)" style="width:16px;height:16px;cursor:pointer;" />
         <span style="margin:0;">Sucursal activa (visible en la tienda)</span></label>

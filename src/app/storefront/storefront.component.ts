@@ -4,6 +4,16 @@ import { ActivatedRoute } from '@angular/router';
 import { StorefrontApi } from './storefront-api.service';
 import { DeliveryZoneDto, LoyaltyLookupDto, OrderChannel, OrderDto, ProductOptionDto, PublicMenuDto, PublicProductDto } from '@core/api/models';
 import { IVA_RATE, money } from '@shared/format';
+import { LocationPickerComponent } from '@shared/location-picker.component';
+
+/** Distancia en línea recta entre dos coordenadas (fórmula de Haversine), en km. */
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 6371 * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
 
 interface CartLine {
   key: string;          // producto + modificadores → identifica la línea
@@ -23,7 +33,7 @@ interface ChannelOpt {
 
 @Component({
   selector: 'app-storefront',
-  imports: [FormsModule],
+  imports: [FormsModule, LocationPickerComponent],
   templateUrl: './storefront.component.html',
   styleUrl: './storefront.component.css',
 })
@@ -56,11 +66,29 @@ export class StorefrontComponent implements OnInit {
   }
   protected setCat(id: string): void { this.activeCat.set(id); }
 
-  // ---- Zonas de entrega ----
+  // ---- Zonas de entrega (por nombre) ----
   protected readonly zones = computed<DeliveryZoneDto[]>(() => this.menu()?.deliveryZones ?? []);
   protected readonly zoneId = signal<string>('');
   protected setZone(id: string): void { this.zoneId.set(id); }
   private readonly selectedZone = computed(() => this.zones().find((z) => z.id === this.zoneId()) ?? null);
+
+  // ---- Cobertura por radio (distancia real desde la sucursal) ----
+  protected readonly usesCoverageRadius = computed(() => !!this.menu()?.coverageRadiusKm);
+  protected readonly customerLat = signal<number | null>(null);
+  protected readonly customerLng = signal<number | null>(null);
+  protected onCustomerLocation(loc: { lat: number; lng: number }): void {
+    this.customerLat.set(loc.lat); this.customerLng.set(loc.lng);
+  }
+  protected readonly distanceKm = computed(() => {
+    const m = this.menu();
+    const lat = this.customerLat(), lng = this.customerLng();
+    if (!m?.branchLat || !m?.branchLng || lat == null || lng == null) return null;
+    return haversineKm(m.branchLat, m.branchLng, lat, lng);
+  });
+  protected readonly outOfCoverage = computed(() => {
+    const d = this.distanceKm(), radius = this.menu()?.coverageRadiusKm;
+    return d != null && radius != null && d > radius;
+  });
 
   /** Secciones visibles. Si hay búsqueda, una sola sección con las coincidencias. */
   protected readonly sections = computed(() => {
@@ -87,9 +115,16 @@ export class StorefrontComponent implements OnInit {
 
   protected readonly cartCount = computed(() => this.cart().reduce((n, l) => n + l.qty, 0));
   protected readonly subtotal = computed(() => this.cart().reduce((s, l) => s + l.unitPrice * l.qty, 0));
-  protected readonly deliveryFee = computed(() =>
-    this.channel() === 'Delivery' ? (this.selectedZone()?.fee ?? 0) : 0,
-  );
+  protected readonly deliveryFee = computed(() => {
+    if (this.channel() !== 'Delivery') return 0;
+    const m = this.menu();
+    if (this.usesCoverageRadius() && m) {
+      const d = this.distanceKm();
+      if (d == null || this.outOfCoverage()) return 0;
+      return Math.round((m.deliveryBaseFee + m.deliveryFeePerKm * d) * 100) / 100;
+    }
+    return this.selectedZone()?.fee ?? 0;
+  });
   protected readonly pointsDiscount = computed(() => {
     if (!this.redeemPoints()) return 0;
     const l = this.loyalty();
@@ -274,7 +309,12 @@ export class StorefrontComponent implements OnInit {
     if (!this.cName().trim() || !this.cPhone().trim()) return false;
     if (this.channel() === 'Delivery') {
       if (!this.cAddress().trim()) return false;
-      if (this.zones().length > 0 && !this.zoneId()) return false;
+      if (this.usesCoverageRadius()) {
+        if (this.customerLat() == null || this.customerLng() == null) return false;
+        if (this.outOfCoverage()) return false;
+      } else if (this.zones().length > 0 && !this.zoneId()) {
+        return false;
+      }
     }
     return this.cartCount() > 0;
   });
@@ -293,7 +333,9 @@ export class StorefrontComponent implements OnInit {
       customerPhone: this.cPhone().trim(),
       customerAddress: this.channel() === 'Delivery' ? this.cAddress().trim() : '',
       notes: this.cNotes().trim(),
-      deliveryZoneId: this.channel() === 'Delivery' ? (this.zoneId() || null) : null,
+      deliveryZoneId: this.channel() === 'Delivery' && !this.usesCoverageRadius() ? (this.zoneId() || null) : null,
+      customerLat: this.channel() === 'Delivery' && this.usesCoverageRadius() ? this.customerLat() : null,
+      customerLng: this.channel() === 'Delivery' && this.usesCoverageRadius() ? this.customerLng() : null,
       couponCode: this.appliedCode() || null,
       redeemPoints: this.redeemPoints(),
       payOnline: this.payOnline(),
@@ -328,6 +370,7 @@ export class StorefrontComponent implements OnInit {
     this.cart.set([]);
     this.cName.set(''); this.cPhone.set(''); this.cAddress.set(''); this.cNotes.set('');
     this.activeCat.set('all'); this.zoneId.set('');
+    this.customerLat.set(null); this.customerLng.set(null);
     this.removeCoupon();
     this.loyalty.set(null); this.redeemPoints.set(false);
     this.payOnline.set(false);

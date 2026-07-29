@@ -49,6 +49,9 @@ export interface BranchDto {
   isActive: boolean;
   latitude: number | null;
   longitude: number | null;
+  coverageRadiusKm: number | null;
+  deliveryBaseFee: number;
+  deliveryFeePerKm: number;
 }
 
 export interface CategoryDto {
@@ -97,6 +100,7 @@ export interface OrderDto {
   notes: string;
   deliveryFee: number;
   deliveryZoneName: string;
+  deliveryDistanceKm: number | null;
   driverId: string | null;
   driverName: string;
   dispatchedAt: string | null;
@@ -204,6 +208,11 @@ export interface PublicMenuDto {
   categories: CategoryDto[];
   products: PublicProductDto[];
   deliveryZones: DeliveryZoneDto[];
+  branchLat: number | null;
+  branchLng: number | null;
+  coverageRadiusKm: number | null;
+  deliveryBaseFee: number;
+  deliveryFeePerKm: number;
 }
 
 export interface PublicOrderLine {
@@ -221,6 +230,8 @@ export interface PublicOrderRequest {
   customerAddress: string;
   notes: string;
   deliveryZoneId: string | null;
+  customerLat?: number | null;
+  customerLng?: number | null;
   couponCode?: string | null;
   redeemPoints?: boolean;
   payOnline?: boolean;
