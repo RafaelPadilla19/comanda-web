@@ -208,7 +208,19 @@
             <span>Dirección de entrega *</span>
             <input type="text" [ngModel]="cAddress()" (ngModelChange)="cAddress.set($event)" placeholder="Colonia, calle, casa #" />
           </label>
-          @if (zones().length > 0) {
+          @if (usesCoverageRadius()) {
+            <div class="sf-field">
+              <span>Marca tu ubicación exacta *</span>
+              <app-location-picker [lat]="customerLat()" [lng]="customerLng()" (locationChange)="onCustomerLocation($event)" />
+              @if (distanceKm() != null) {
+                @if (outOfCoverage()) {
+                  <p class="sf-err">Estás fuera de nuestra zona de cobertura ({{ distanceKm()!.toFixed(1) }} km, máximo {{ menu()!.coverageRadiusKm!.toFixed(1) }} km).</p>
+                } @else {
+                  <p class="sf-coupon-msg">📍 {{ distanceKm()!.toFixed(1) }} km · envío {{ money(deliveryFee()) }}</p>
+                }
+              }
+            </div>
+          } @else if (zones().length > 0) {
             <div class="sf-field">
               <span>Zona de entrega *</span>
               <div class="sf-zones">
