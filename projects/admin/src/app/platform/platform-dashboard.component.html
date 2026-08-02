@@ -219,10 +219,10 @@
           </div>
           <div style="padding:18px;display:flex;flex-direction:column;gap:12px;">
             <label style="font-size:12.5px;font-weight:600;color:var(--text-2);">App ID
-              <input class="pf-input" [ngModel]="wompiAppId()" (ngModelChange)="wompiAppId.set($event)" placeholder="App ID de Wompi" />
+              <input class="pf-input" autocomplete="off" name="wompi-app-id" [ngModel]="wompiAppId()" (ngModelChange)="wompiAppId.set($event)" placeholder="App ID de Wompi" />
             </label>
             <label style="font-size:12.5px;font-weight:600;color:var(--text-2);">API Secret
-              <input class="pf-input" type="password" [ngModel]="wompiSecret()" (ngModelChange)="wompiSecret.set($event)" [placeholder]="wompiConnected() ? '•••••••• (escribe para reemplazar)' : 'API Secret de Wompi'" />
+              <input class="pf-input" type="password" autocomplete="new-password" name="wompi-api-secret" [ngModel]="wompiSecret()" (ngModelChange)="wompiSecret.set($event)" [placeholder]="wompiConnected() ? '•••••••• (escribe para reemplazar)' : 'API Secret de Wompi'" />
             </label>
             <div style="font-size:11.5px;color:var(--text-3);">Para desconectar, vacía el App ID y guarda. El secret se almacena cifrado.</div>
             @if (wompiMsg()) { <div style="font-size:12.5px;font-weight:600;color:var(--primary-text);">{{ wompiMsg() }}</div> }
