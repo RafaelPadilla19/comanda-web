@@ -107,7 +107,7 @@
                       </div>
                     </td>
                     <td>
-                      <select class="pf-select" [value]="t.planId ?? ''" (change)="changePlan(t, $any($event.target).value)">
+                      <select class="pf-select" [ngModel]="t.planId ?? ''" (ngModelChange)="changePlan(t, $event)">
                         <option value="" disabled>Sin plan</option>
                         @for (p of plans(); track p.id) {
                           <option [value]="p.id">{{ p.name }} · {{ money(p.priceMonthly) }}/mes</option>
