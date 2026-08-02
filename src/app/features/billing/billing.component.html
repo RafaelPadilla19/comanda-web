@@ -5,7 +5,11 @@
   @if (loading()) {
     <div style="padding:48px;text-align:center;color:var(--text-3);">Cargando…</div>
   } @else if (billing(); as b) {
-    @if (renewalAlert() === 'pastdue') {
+    @if (isTrial()) {
+      <div style="margin-top:16px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:14px;padding:14px 16px;font-size:13.5px;font-weight:600;">
+        🎁 Tienes acceso Premium gratis hasta el <b>{{ trialEndsLabel() }}</b>, sin necesidad de tarjeta. Al terminar el período de prueba, si no activas un plan pago pasarás automáticamente al plan Gratis.
+      </div>
+    } @else if (renewalAlert() === 'pastdue') {
       <div style="margin-top:16px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:14px;padding:14px 16px;font-size:13.5px;font-weight:600;">
         ⛔ Tu suscripción venció. Renueva tu plan abajo para reactivar el acceso a Comanda.
       </div>
@@ -31,10 +35,13 @@
         Vigente hasta: <b style="color:var(--text);">{{ fmtDate(b.subscriptionEndsAt) }}</b>
       </div>
       @if (b.hasPlan && b.priceMonthly > 0) {
-        <button (click)="pay()" [disabled]="processing()" style="margin-top:16px;height:44px;padding:0 22px;border:none;border-radius:12px;background:linear-gradient(140deg,#10B981,#059669);color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;box-shadow:0 6px 18px rgba(16,185,129,.35);">
-          {{ processing() ? 'Procesando…' : '💳 Pagar / renovar suscripción' }}
+        <button (click)="pay()" [disabled]="isTrial() || processing()"
+                [title]="isTrial() ? 'Disponible cuando termine tu período de prueba gratis' : ''"
+                [style.opacity]="isTrial() ? '.5' : '1'" [style.cursor]="isTrial() ? 'not-allowed' : 'pointer'"
+                style="margin-top:16px;height:44px;padding:0 22px;border:none;border-radius:12px;background:linear-gradient(140deg,#10B981,#059669);color:#fff;font-weight:700;font-size:14px;font-family:inherit;box-shadow:0 6px 18px rgba(16,185,129,.35);">
+          {{ isTrial() ? '💳 Pagar / renovar suscripción (en prueba gratis)' : (processing() ? 'Procesando…' : '💳 Pagar / renovar suscripción') }}
         </button>
-        @if (pendingOverage() > 0) {
+        @if (pendingOverage() > 0 && !isTrial()) {
           <div style="margin-top:10px;font-size:12.5px;color:var(--text-2);">
             Próximo cobro: <b>{{ money(b.priceMonthly) }}</b> de suscripción + <b style="color:#d97706;">{{ money(pendingOverage()) }}</b> de pedidos extra = <b>{{ money(nextChargeTotal()) }}</b>
           </div>
@@ -76,11 +83,13 @@
                 @if (p.inventory) { <span style="font-size:10px;font-weight:700;background:var(--surface-hover);padding:1px 7px;border-radius:20px;">Inventario</span> }
               </div>
             </div>
-            <button (click)="choosePlan(p)" [disabled]="isCurrent(p) || changingId() === p.id"
-                    style="margin-top:14px;width:100%;height:38px;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;"
+            <button (click)="choosePlan(p)" [disabled]="isCurrent(p) || changingId() === p.id || (isTrial() && p.priceMonthly > 0)"
+                    [title]="isTrial() && p.priceMonthly > 0 ? 'Disponible cuando termine tu período de prueba gratis' : ''"
+                    style="margin-top:14px;width:100%;height:38px;border:none;border-radius:10px;font-weight:700;font-size:13px;font-family:inherit;"
                     [style.background]="isCurrent(p) ? 'var(--surface-hover)' : 'linear-gradient(140deg,#10B981,#059669)'"
                     [style.color]="isCurrent(p) ? 'var(--text-3)' : '#fff'"
-                    [style.cursor]="isCurrent(p) ? 'default' : 'pointer'">
+                    [style.opacity]="isTrial() && p.priceMonthly > 0 && !isCurrent(p) ? '.5' : '1'"
+                    [style.cursor]="isCurrent(p) ? 'default' : (isTrial() && p.priceMonthly > 0 ? 'not-allowed' : 'pointer')">
               {{ isCurrent(p) ? 'Plan actual' : (changingId() === p.id ? 'Procesando…' : (p.priceMonthly > 0 ? 'Mejorar a este plan' : 'Cambiar a Gratis')) }}
             </button>
           </div>

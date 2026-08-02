@@ -22,6 +22,7 @@ export interface UserDto {
   plan: PlanFeaturesDto | null;
   subscriptionStatus: SubscriptionStatus;
   subscriptionEndsAt: string | null;
+  trialEndsAt: string | null;
 }
 
 /** Funciones incluidas en el plan del restaurante (para mostrar/ocultar la UI). */
@@ -505,6 +506,7 @@ export interface BillingDto {
   priceMonthly: number;
   status: SubscriptionStatus;
   subscriptionEndsAt: string | null;
+  trialEndsAt: string | null;
   payments: SubscriptionPaymentDto[];
   usage: PlanUsageDto | null;
 }
