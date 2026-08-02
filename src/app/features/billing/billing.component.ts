@@ -63,7 +63,7 @@ export class BillingComponent implements OnInit {
 
   /** Mejora/cambia a un plan: gratis se activa al instante; pago abre el checkout de Wompi. */
   protected choosePlan(p: PlanDto): void {
-    if (this.changingId() || this.isCurrent(p)) return;
+    if (this.isTrial() || this.changingId() || this.isCurrent(p)) return;
     this.changingId.set(p.id);
     this.msg.set(null);
     this.api.billingCheckout(window.location.href, p.id).subscribe({
@@ -115,6 +115,10 @@ export class BillingComponent implements OnInit {
     return s === 'Active' ? 'var(--primary)' : s === 'Suspended' || s === 'PastDue' ? '#ef4444' : s === 'Trial' ? '#3B82F6' : 'var(--text-3)';
   });
 
+  /** Campaña de lanzamiento: acceso Premium gratis, sin tarjeta. El pago se muestra pero deshabilitado. */
+  protected readonly isTrial = computed(() => this.billing()?.status === 'Trial');
+  protected readonly trialEndsLabel = computed(() => this.fmtDate(this.billing()?.trialEndsAt ?? null));
+
   protected pct(n: number, max: number): number {
     return max <= 0 ? 0 : Math.min(100, Math.round((n / max) * 100));
   }
@@ -134,7 +138,7 @@ export class BillingComponent implements OnInit {
   }
 
   protected pay(): void {
-    if (this.processing()) return;
+    if (this.isTrial() || this.processing()) return;
     this.processing.set(true);
     this.msg.set(null);
     this.api.billingCheckout(window.location.href).subscribe({
