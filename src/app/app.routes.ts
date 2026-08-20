@@ -22,6 +22,12 @@ export const routes: Routes = [
       import('./storefront/store-landing.component').then((m) => m.StoreLandingComponent),
   },
   {
+    path: 'tienda/:slug/tarjeta',
+    title: 'Mi tarjeta de fidelidad · Comanda',
+    loadComponent: () =>
+      import('./storefront/loyalty-card.component').then((m) => m.LoyaltyCardComponent),
+  },
+  {
     path: 't/:branchId',
     title: 'Menú · Comanda',
     loadComponent: () =>

@@ -33,6 +33,7 @@ import { BranchDto } from '@core/api/models';
             </a>
           }
         </div>
+        <a class="lp-loyalty" [routerLink]="['/tienda', slug(), 'tarjeta']">🎁 Ver mi tarjeta de fidelidad</a>
       }
     </div>
   `,
@@ -67,6 +68,10 @@ import { BranchDto } from '@core/api/models';
     .lp-card-body p { font-size: 13px; color: var(--text-2); margin: 2px 0; }
     .lp-card-body span { font-size: 12px; color: var(--text-3); }
     .lp-arrow { font-size: 24px; color: var(--text-3); }
+    .lp-loyalty {
+      display: block; text-align: center; margin-top: 20px;
+      font-size: 13px; font-weight: 700; color: var(--primary-text); text-decoration: none;
+    }
   `],
 })
 export class StoreLandingComponent implements OnInit {
@@ -74,9 +79,11 @@ export class StoreLandingComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   protected readonly branches = signal<BranchDto[]>([]);
   protected readonly loading = signal(true);
+  protected readonly slug = signal('');
 
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug') ?? '';
+    this.slug.set(slug);
     if (!slug) { this.loading.set(false); return; }
     this.api.branches(slug).subscribe({
       next: (b) => { this.branches.set(b); this.loading.set(false); },

@@ -178,6 +178,7 @@ export interface LoyaltyLookupDto {
   points: number;
   redeemRate: number;
   redeemableAmount: number;
+  customerName: string;
 }
 
 export interface CustomerDetailDto {
