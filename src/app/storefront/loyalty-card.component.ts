@@ -6,6 +6,7 @@ import { StorefrontApi } from './storefront-api.service';
 import { LoyaltyLookupDto } from '@core/api/models';
 
 const PHONE_KEY = 'comanda_customer_phone';
+const TOKEN_KEY = 'comanda_loyalty_token';
 
 /** Tarjeta digital de fidelidad: el cliente pone su teléfono y ve su saldo de puntos + QR. */
 @Component({
@@ -130,13 +131,18 @@ export class LoyaltyCardComponent implements OnInit {
     if (!this.branchId || digits.length < 4 || this.loading()) return;
     this.loading.set(true);
     this.notFound.set(false);
-    this.api.loyaltyLookup(this.branchId, digits).subscribe({
+    const savedToken = localStorage.getItem(TOKEN_KEY) ?? '';
+    this.api.loyaltyLookup(this.branchId, digits, savedToken).subscribe({
       next: (l) => {
         this.loading.set(false);
         if (!l.enabled) { this.notFound.set(true); this.loyalty.set(null); return; }
         localStorage.setItem(PHONE_KEY, digits);
+        if (l.token) localStorage.setItem(TOKEN_KEY, l.token);
         this.loyalty.set(l);
-        QRCode.toDataURL(digits, { width: 320, margin: 2, errorCorrectionLevel: 'M' }).then((img) => this.qrImage.set(img));
+        // El QR lleva el token (secreto, propio de este dispositivo), nunca el teléfono:
+        // así nadie puede copiar el código y hacerse pasar por el cliente en otro lado.
+        const qrValue = l.token || savedToken || digits;
+        QRCode.toDataURL(qrValue, { width: 320, margin: 2, errorCorrectionLevel: 'M' }).then((img) => this.qrImage.set(img));
       },
       error: () => { this.loading.set(false); this.notFound.set(true); },
     });
@@ -146,6 +152,7 @@ export class LoyaltyCardComponent implements OnInit {
     this.loyalty.set(null);
     this.qrImage.set(null);
     localStorage.removeItem(PHONE_KEY);
+    localStorage.removeItem(TOKEN_KEY);
   }
 
   protected money(n: number): string {

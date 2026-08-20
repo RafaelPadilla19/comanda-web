@@ -171,10 +171,21 @@ export class StorefrontComponent implements OnInit {
     this.cPhone.set(v);
     const digits = v.replace(/\D/g, '');
     if (digits.length >= 8) {
-      this.api.loyaltyLookup(this.branchId, digits).subscribe((l) => this.loyalty.set(l.enabled ? l : null));
+      const savedToken = localStorage.getItem('comanda_loyalty_token') ?? '';
+      this.api.loyaltyLookup(this.branchId, digits, savedToken).subscribe((l) => {
+        this.loyalty.set(l.enabled ? l : null);
+        // El token solo llega la primera vez que este dispositivo reclama a este cliente;
+        // se guarda para poder canjear sus puntos en este pedido y en los siguientes.
+        if (l.token) localStorage.setItem('comanda_loyalty_token', l.token);
+      });
     } else {
       this.loyalty.set(null); this.redeemPoints.set(false);
     }
+  }
+
+  /** Token del dispositivo (si ya reclamó a algún cliente) — prueba de dueño para canjear puntos. */
+  private loyaltyToken(): string | null {
+    return localStorage.getItem('comanda_loyalty_token');
   }
 
   // ---- Cupón ----
@@ -338,6 +349,7 @@ export class StorefrontComponent implements OnInit {
       customerLng: this.channel() === 'Delivery' && this.usesCoverageRadius() ? this.customerLng() : null,
       couponCode: this.appliedCode() || null,
       redeemPoints: this.redeemPoints(),
+      loyaltyToken: this.loyaltyToken(),
       payOnline: this.payOnline(),
       returnUrl: window.location.href,  // el front sabe a dónde volver tras pagar
       tipRestaurant: this.tipRestaurant(),

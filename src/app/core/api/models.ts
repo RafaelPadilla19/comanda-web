@@ -179,6 +179,7 @@ export interface LoyaltyLookupDto {
   redeemRate: number;
   redeemableAmount: number;
   customerName: string;
+  token: string;
 }
 
 export interface CustomerDetailDto {
@@ -236,6 +237,7 @@ export interface PublicOrderRequest {
   customerLng?: number | null;
   couponCode?: string | null;
   redeemPoints?: boolean;
+  loyaltyToken?: string | null;
   payOnline?: boolean;
   returnUrl?: string;
   tipRestaurant?: number;

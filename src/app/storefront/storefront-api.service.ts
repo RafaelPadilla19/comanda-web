@@ -29,7 +29,7 @@ export class StorefrontApi {
     return this.http.post<CouponValidationDto>(`${this.base}/public/coupons/validate`, { branchId, code, subtotal });
   }
 
-  loyaltyLookup(branchId: string, phone: string): Observable<LoyaltyLookupDto> {
-    return this.http.post<LoyaltyLookupDto>(`${this.base}/public/loyalty/lookup`, { branchId, phone });
+  loyaltyLookup(branchId: string, phone: string, token = ''): Observable<LoyaltyLookupDto> {
+    return this.http.post<LoyaltyLookupDto>(`${this.base}/public/loyalty/lookup`, { branchId, phone, token });
   }
 }
