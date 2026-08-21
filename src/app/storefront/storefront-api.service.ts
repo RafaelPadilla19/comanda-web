@@ -36,4 +36,8 @@ export class StorefrontApi {
   riderLocation(orderId: string): Observable<OrderRiderLocationDto> {
     return this.http.get<OrderRiderLocationDto>(`${this.base}/public/orders/${orderId}/rider-location`);
   }
+
+  orderTracking(orderId: string): Observable<OrderDto> {
+    return this.http.get<OrderDto>(`${this.base}/public/orders/${orderId}`);
+  }
 }

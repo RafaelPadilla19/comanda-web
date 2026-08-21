@@ -1,11 +1,10 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { StorefrontApi } from './storefront-api.service';
 import { DeliveryZoneDto, LoyaltyLookupDto, OrderChannel, OrderDto, ProductOptionDto, PublicMenuDto, PublicProductDto } from '@core/api/models';
 import { IVA_RATE, money } from '@shared/format';
 import { LocationPickerComponent } from '@shared/location-picker.component';
-import { RiderTrackerComponent } from './rider-tracker.component';
 
 /** Distancia en línea recta entre dos coordenadas (fórmula de Haversine), en km. */
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -34,7 +33,7 @@ interface ChannelOpt {
 
 @Component({
   selector: 'app-storefront',
-  imports: [FormsModule, LocationPickerComponent, RiderTrackerComponent],
+  imports: [FormsModule, LocationPickerComponent, RouterLink],
   templateUrl: './storefront.component.html',
   styleUrl: './storefront.component.css',
 })

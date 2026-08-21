@@ -34,6 +34,12 @@ export const routes: Routes = [
       import('./storefront/storefront.component').then((m) => m.StorefrontComponent),
   },
   {
+    path: 'pedido/:orderId',
+    title: 'Seguimiento de tu pedido · Comanda',
+    loadComponent: () =>
+      import('./storefront/order-tracking.component').then((m) => m.OrderTrackingComponent),
+  },
+  {
     path: '',
     component: ShellComponent,
     canActivate: [authGuard],
