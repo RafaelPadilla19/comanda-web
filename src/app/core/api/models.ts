@@ -102,6 +102,8 @@ export interface OrderDto {
   deliveryFee: number;
   deliveryZoneName: string;
   deliveryDistanceKm: number | null;
+  customerLat: number | null;
+  customerLng: number | null;
   driverId: string | null;
   driverName: string;
   dispatchedAt: string | null;
@@ -486,6 +488,14 @@ export interface PlatformTenantDto {
   users: number;
   orders: number;
   createdAt: string;
+}
+
+export interface OrderRiderLocationDto {
+  available: boolean;
+  jobStatus: string;
+  lat: number | null;
+  lng: number | null;
+  updatedAt: string | null;
 }
 
 export interface WompiConfigDto {

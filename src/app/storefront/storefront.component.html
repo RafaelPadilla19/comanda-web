@@ -323,6 +323,9 @@
       <p class="sf-confirm-code">{{ ord.code }}</p>
       <p class="sf-confirm-sub">{{ channelLabel(ord.channel) }} · {{ money(ord.total) }}</p>
       <p class="sf-confirm-note">El restaurante recibió tu pedido y te contactará al <b>{{ ord.customerPhone }}</b>.</p>
+      @if (ord.channel === 'Delivery') {
+        <app-rider-tracker [orderId]="ord.id" [customerLat]="ord.customerLat" [customerLng]="ord.customerLng" />
+      }
       @if (ord.paymentUrl && !ord.isPaid) {
         <button type="button" class="sf-cta" (click)="openPayment()">💳 Pagar en línea · {{ money(ord.total) }}</button>
         <p class="sf-confirm-note" style="margin-top:8px;">Abrimos el pago en otra pestaña. Si no, toca el botón.</p>

@@ -5,6 +5,7 @@ import { StorefrontApi } from './storefront-api.service';
 import { DeliveryZoneDto, LoyaltyLookupDto, OrderChannel, OrderDto, ProductOptionDto, PublicMenuDto, PublicProductDto } from '@core/api/models';
 import { IVA_RATE, money } from '@shared/format';
 import { LocationPickerComponent } from '@shared/location-picker.component';
+import { RiderTrackerComponent } from './rider-tracker.component';
 
 /** Distancia en línea recta entre dos coordenadas (fórmula de Haversine), en km. */
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -33,7 +34,7 @@ interface ChannelOpt {
 
 @Component({
   selector: 'app-storefront',
-  imports: [FormsModule, LocationPickerComponent],
+  imports: [FormsModule, LocationPickerComponent, RiderTrackerComponent],
   templateUrl: './storefront.component.html',
   styleUrl: './storefront.component.css',
 })

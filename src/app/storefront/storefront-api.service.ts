@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { BranchDto, CouponValidationDto, LoyaltyLookupDto, OrderDto, PublicMenuDto, PublicOrderRequest } from '@core/api/models';
+import { BranchDto, CouponValidationDto, LoyaltyLookupDto, OrderDto, OrderRiderLocationDto, PublicMenuDto, PublicOrderRequest } from '@core/api/models';
 
 /**
  * Cliente HTTP de la tienda pública (QR). Consume los endpoints anónimos
@@ -31,5 +31,9 @@ export class StorefrontApi {
 
   loyaltyLookup(branchId: string, phone: string, token = ''): Observable<LoyaltyLookupDto> {
     return this.http.post<LoyaltyLookupDto>(`${this.base}/public/loyalty/lookup`, { branchId, phone, token });
+  }
+
+  riderLocation(orderId: string): Observable<OrderRiderLocationDto> {
+    return this.http.get<OrderRiderLocationDto>(`${this.base}/public/orders/${orderId}/rider-location`);
   }
 }
