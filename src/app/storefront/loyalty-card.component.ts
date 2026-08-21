@@ -1,14 +1,17 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import QRCode from 'qrcode';
 import { StorefrontApi } from './storefront-api.service';
 import { LoyaltyLookupDto } from '@core/api/models';
 
 const PHONE_KEY = 'comanda_customer_phone';
 const TOKEN_KEY = 'comanda_loyalty_token';
 
-/** Tarjeta digital de fidelidad: el cliente pone su teléfono y ve su saldo de puntos + QR. */
+/**
+ * Tarjeta digital de fidelidad: el cliente pone su teléfono y ve su saldo de puntos.
+ * Sin QR: nadie lo escanea todavía (no hay lector en caja) y mostrar un código fijo en
+ * pantalla solo crea el riesgo de que alguien lo fotografíe y lo reuse en otro lado.
+ */
 @Component({
   selector: 'app-loyalty-card',
   imports: [FormsModule],
@@ -48,12 +51,6 @@ const TOKEN_KEY = 'comanda_loyalty_token';
           @if (loyalty()!.redeemableAmount > 0) {
             <div class="lc-redeem">Puedes canjear hasta <b>{{ money(loyalty()!.redeemableAmount) }}</b> en tu próximo pedido</div>
           }
-          @if (qrImage()) {
-            <div class="lc-qr">
-              <img [src]="qrImage()" alt="Código de tu tarjeta" />
-              <span>Muestra este código en caja</span>
-            </div>
-          }
         </div>
       }
     </div>
@@ -92,10 +89,7 @@ const TOKEN_KEY = 'comanda_loyalty_token';
     .lc-points { text-align: center; margin: 28px 0; }
     .lc-points-num { font-size: 56px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
     .lc-points-label { font-size: 13px; color: var(--text-2); font-weight: 600; margin-top: 4px; }
-    .lc-redeem { text-align: center; font-size: 13px; color: var(--text-2); margin-bottom: 20px; }
-    .lc-qr { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-    .lc-qr img { width: 160px; height: 160px; border-radius: 12px; }
-    .lc-qr span { font-size: 11.5px; color: var(--text-3); }
+    .lc-redeem { text-align: center; font-size: 13px; color: var(--text-2); }
   `],
 })
 export class LoyaltyCardComponent implements OnInit {
@@ -106,7 +100,6 @@ export class LoyaltyCardComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly notFound = signal(false);
   protected readonly loyalty = signal<LoyaltyLookupDto | null>(null);
-  protected readonly qrImage = signal<string | null>(null);
   protected readonly branchName = signal('');
 
   private branchId = '';
@@ -139,10 +132,6 @@ export class LoyaltyCardComponent implements OnInit {
         localStorage.setItem(PHONE_KEY, digits);
         if (l.token) localStorage.setItem(TOKEN_KEY, l.token);
         this.loyalty.set(l);
-        // El QR lleva el token (secreto, propio de este dispositivo), nunca el teléfono:
-        // así nadie puede copiar el código y hacerse pasar por el cliente en otro lado.
-        const qrValue = l.token || savedToken || digits;
-        QRCode.toDataURL(qrValue, { width: 320, margin: 2, errorCorrectionLevel: 'M' }).then((img) => this.qrImage.set(img));
       },
       error: () => { this.loading.set(false); this.notFound.set(true); },
     });
@@ -150,7 +139,6 @@ export class LoyaltyCardComponent implements OnInit {
 
   protected reset(): void {
     this.loyalty.set(null);
-    this.qrImage.set(null);
     localStorage.removeItem(PHONE_KEY);
     localStorage.removeItem(TOKEN_KEY);
   }
