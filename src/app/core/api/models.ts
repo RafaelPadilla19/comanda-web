@@ -38,6 +38,7 @@ export interface PlanFeaturesDto {
 export interface LoginResponse {
   token: string;
   expiresAt: string;
+  refreshToken: string;
   user: UserDto;
 }
 
