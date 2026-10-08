@@ -40,6 +40,10 @@ export class LoginByTokenComponent implements OnInit {
       return;
     }
 
+    // Por si el navegador/WebView ya traía una sesión de otro usuario: este link siempre
+    // representa "entra como este" — arranca limpio para no mezclar sesiones.
+    this.auth.logout();
+
     this.auth.loginWithToken(token).subscribe({
       next: () => this.router.navigateByUrl('/dashboard'),
       error: () => this.checking.set(false),
