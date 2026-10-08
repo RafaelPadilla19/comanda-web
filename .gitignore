@@ -15,3 +15,11 @@
 *.log
 .DS_Store
 Thumbs.db
+
+# Firebase local
+/.firebase
+.firebaserc
+firebase.json
+
+# Environments de producción (no trackeados, son locales por entorno)
+environment.production.ts
