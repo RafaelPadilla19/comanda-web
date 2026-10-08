@@ -14,7 +14,7 @@ export class LoginComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  protected email = signal('rosa@saboresdelpuerto.sv');
+  protected email = signal('');
   protected password = signal('');
   protected loading = signal(false);
   protected error = signal<string | null>(null);

@@ -13,6 +13,18 @@ export const routes: Routes = [
     title: 'Crear cuenta · Comanda',
     loadComponent: () => import('./features/auth/register.component').then((m) => m.RegisterComponent),
   },
+  // ---- Login/logout por link, para una app que embebe Comanda en un WebView ----
+  {
+    path: 'login-token/:token',
+    title: 'Iniciando sesión · Comanda',
+    loadComponent: () =>
+      import('./features/auth/login-by-token.component').then((m) => m.LoginByTokenComponent),
+  },
+  {
+    path: 'logout',
+    title: 'Comanda',
+    loadComponent: () => import('./features/auth/logout.component').then((m) => m.LogoutComponent),
+  },
   // El super-admin (control-plane) vive en una app aparte (proyecto "admin", dominio propio).
   // ---- Tienda pública (QR) — sin sesión ni shell ----
   {

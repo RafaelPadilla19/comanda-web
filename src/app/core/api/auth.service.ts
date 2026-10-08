@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, catchError, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LoginResponse, PlanFeaturesDto, UserDto } from './models';
 
@@ -8,6 +8,7 @@ export type PlanFeature = keyof Omit<PlanFeaturesDto, 'planName'>;
 
 const TOKEN_KEY = 'comanda_token';
 const USER_KEY = 'comanda_user';
+const REFRESH_KEY = 'comanda_refresh_token';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -47,16 +48,37 @@ export class AuthService {
     return this.http.get<UserDto>(`${this.base}/auth/me`).pipe(tap((u) => this.currentUser.set(u)));
   }
 
+  /** Login vía un link de un app embebiendo Comanda en un WebView: canjea el refresh token
+   * (recibido como parte de la URL) por una sesión, sin pedir credenciales. */
+  loginWithToken(refreshToken: string): Observable<LoginResponse> {
+    return this.http
+      .post<LoginResponse>(`${this.base}/auth/refresh-token`, { refreshToken })
+      .pipe(tap((res) => this.setSession(res)));
+  }
+
+  /** Cierra sesión: limpia el navegador de inmediato (síncrono, como antes — nadie que llame
+   * a esto necesita esperar nada) y de paso revoca el refresh token en el backend en segundo
+   * plano. Revocar es lo que de verdad invalida el acceso — sin esto, un refresh token que ya
+   * viste en una URL/log seguiría sirviendo para entrar aunque el usuario ya "cerró sesión". */
   logout(): void {
+    const refreshToken = localStorage.getItem(REFRESH_KEY);
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(REFRESH_KEY);
     this.token.set(null);
     this.currentUser.set(null);
+
+    if (refreshToken) {
+      this.http.post<void>(`${this.base}/auth/revoke-token`, { refreshToken })
+        .pipe(catchError(() => of(undefined)))
+        .subscribe();
+    }
   }
 
   private setSession(res: LoginResponse): void {
     localStorage.setItem(TOKEN_KEY, res.token);
     localStorage.setItem(USER_KEY, JSON.stringify(res.user));
+    if (res.refreshToken) localStorage.setItem(REFRESH_KEY, res.refreshToken);
     this.token.set(res.token);
     this.currentUser.set(res.user);
   }
