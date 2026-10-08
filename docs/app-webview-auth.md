@@ -9,11 +9,6 @@ mostrarle nunca el formulario de login.
 https://comanda.innovacors.com/login-token/{token}
 ```
 
-> ⚠️ Hoy el dominio en producción es `https://comanda-innovacors.web.app` — si
-> `comanda.innovacors.com` todavía no está configurado como dominio personalizado en
-> Firebase Hosting, avisar antes de que la app apunte ahí (es un paso de configuración
-> aparte, no de código).
-
 **Qué es `{token}`:** es el `refreshToken` de una sesión ya existente — el mismo campo
 que devuelven `/auth/login`, `/auth/register` o `/auth/refresh-token` en el backend. La
 app debe guardar ese valor (de cuando el usuario inició sesión por primera vez, por
